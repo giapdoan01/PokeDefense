@@ -7,6 +7,9 @@ TagManager:
   - FxTemporaire
   - Ground
   - Point
+  - Pokemon
+  - Enemy
+  - PE
   layers:
   - Default
   - TransparentFX
@@ -14,8 +17,8 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
+  - Pokemon
+  - Enemy
   - 
   - 
   - 

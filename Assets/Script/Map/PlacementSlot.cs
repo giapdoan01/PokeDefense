@@ -12,7 +12,17 @@ public class PlacementSlot : MonoBehaviour
         if (isOccupied) return;
 
         Vector3 pos = placePoint ? placePoint.position : transform.position;
-        Instantiate(pokemonPrefab, pos, Quaternion.identity);
+        GameObject pokemon = Instantiate(pokemonPrefab, pos, Quaternion.identity);
+
+        // Gán slot vào PokemonUpgrade
+        PokemonEvolution upgrade = pokemon.GetComponent<PokemonEvolution>();
+        if (upgrade != null)
+            upgrade.currentSlot = this;
+
         isOccupied = true;
+    }
+    public void RemovePokemon()
+    {
+        isOccupied = false;
     }
 }
