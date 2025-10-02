@@ -5,26 +5,38 @@ using System.Collections.Generic;
 public class PikachuSkill : MonoBehaviour, ISkill
 {
     private float damage;
+    private float range;
+    private Transform targetEnemy;
+
     private float duration = 10f;       // Skill tồn tại 10 giây
-    private float tickInterval = 0.5f;  // Gây sát thương mỗi 0.5s
+    private float tickInterval = 0.5f;  // Gây damage mỗi 0.5 giây
 
     private List<EnemyHealth> enemiesInRange = new List<EnemyHealth>();
 
-    public void Initialize(float dmg)
+    public void Initialize(float dmg, float rng, EnemyHealth target, Animator animator = null)
     {
         damage = dmg;
+        range = rng;
+        targetEnemy = target.transform;
+
+        // Spawn skill tại vị trí enemy target
+        if (targetEnemy != null)
+        {
+            transform.position = targetEnemy.position + Vector3.up * 0.3f; // nâng lên một chút cho dễ nhìn
+        }
+
         StartCoroutine(DamageOverTime());
-        Destroy(gameObject, duration); // tự hủy sau 10 giây
+        Destroy(gameObject, duration);
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Enemy"))
         {
-            EnemyHealth enemyHealth = other.GetComponent<EnemyHealth>();
-            if (enemyHealth != null && !enemiesInRange.Contains(enemyHealth))
+            EnemyHealth eh = other.GetComponent<EnemyHealth>();
+            if (eh != null && !enemiesInRange.Contains(eh))
             {
-                enemiesInRange.Add(enemyHealth);
+                enemiesInRange.Add(eh);
             }
         }
     }
@@ -33,10 +45,10 @@ public class PikachuSkill : MonoBehaviour, ISkill
     {
         if (other.CompareTag("Enemy"))
         {
-            EnemyHealth enemyHealth = other.GetComponent<EnemyHealth>();
-            if (enemyHealth != null && enemiesInRange.Contains(enemyHealth))
+            EnemyHealth eh = other.GetComponent<EnemyHealth>();
+            if (eh != null)
             {
-                enemiesInRange.Remove(enemyHealth);
+                enemiesInRange.Remove(eh);
             }
         }
     }

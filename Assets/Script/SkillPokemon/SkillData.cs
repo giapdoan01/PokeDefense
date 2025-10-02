@@ -1,12 +1,13 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "SkillData", menuName = "Pokemon/SkillPokemon")]
+[CreateAssetMenu(fileName = "SkillData", menuName = "Pokemon/New Skill")]
 public class SkillData : ScriptableObject
 {
     public string skillName;
     public GameObject skillPrefab;
 
-    public float baseDamage;
-    public float baseCooldown;
-    public float baseRange; 
+    [Header("Base Stats")]
+    public float baseDamage = 10f;
+    public float baseCooldown = 1f;
+    public float baseRange = 5f;
 }

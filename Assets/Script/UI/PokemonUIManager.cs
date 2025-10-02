@@ -42,6 +42,12 @@ public class PokemonUIManager : MonoBehaviour
     {
         if (currentPokemon != null)
         {
+            // Gọi RemovePokemon() trên slot để đặt lại trạng thái isOccupied = false
+            if (currentPokemon.currentSlot != null)
+            {
+                currentPokemon.currentSlot.RemovePokemon();
+            }
+            
             Destroy(currentPokemon.gameObject);
             HidePanel();
         }
