@@ -4,7 +4,7 @@ using UnityEngine.UI;
 public class EnemyHealth : MonoBehaviour
 {
     public float baseHealth = 100;
-    private float currentHealth;
+    public float currentHealth;
     private int roundMultiplier = 1;
     private bool isDead = false; // Thêm biến cờ để kiểm tra đã chết chưa
 

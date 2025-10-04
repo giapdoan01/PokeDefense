@@ -921,7 +921,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4007fbe13e26e144fa2bd165acbeebfa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillData: {fileID: 11400000, guid: 23ea10166c7132c4c8f8aa994f39e27a, type: 2}
+  skillLevels:
+  - {fileID: 11400000, guid: 23ea10166c7132c4c8f8aa994f39e27a, type: 2}
+  currentSkillLevel: 0
   rotationSpeed: 10
 --- !u!1 &4793272482788380660
 GameObject:

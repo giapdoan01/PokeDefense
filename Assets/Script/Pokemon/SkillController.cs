@@ -1,148 +1,285 @@
 using UnityEngine;
-using System.Linq;
-using System.Collections;
+using System.Collections.Generic;
 
 public class SkillController : MonoBehaviour
 {
-    [SerializeField] private SkillData skillData;
+    [Header("Skill Progression System")]
+    [SerializeField] private List<SkillData> skillLevels = new List<SkillData>();
+    [SerializeField] private int currentSkillLevel = 0;
     
-    private float skillDamage;
-    private float skillCooldown;
-    private float skillRange;
+    [Header("Skill Settings")]
+    [SerializeField] private float rotationSpeed = 10f;
+    
+    [Header("🔍 DEBUG")]
+    [SerializeField] private bool enableDebugLogs = true;
+    
     private float cooldownTimer;
-    private bool canCastSkill = false; // Biến để kiểm soát việc có thể cast skill hay không
-    
-    [SerializeField] private float rotationSpeed = 10f; // Tốc độ xoay của Pokemon
+    private bool canCastSkill = false;
     private Transform portalEnd;
-    private EnemyHealth currentTarget; // Lưu mục tiêu hiện tại
-    private Animator animator; // Tham chiếu đến Animator
+    private EnemyHealth currentTarget;
+    private Animator pokemonAnimator;
+    private GameObject activeSkillInstance;
+    
+    public SkillData CurrentSkillData => (skillLevels != null && skillLevels.Count > 0 && currentSkillLevel < skillLevels.Count) 
+        ? skillLevels[currentSkillLevel] : null;
+    
+    public bool CanUpgrade => currentSkillLevel < skillLevels.Count - 1;
+    public int CurrentLevel => currentSkillLevel + 1;
+    public int MaxLevel => skillLevels.Count;
+    public float CurrentCooldown => cooldownTimer;
 
     private void Start()
     {
-        if (skillData != null)
-        {
-            skillDamage = skillData.baseDamage;
-            skillCooldown = skillData.baseCooldown;
-            skillRange = skillData.baseRange;
-        }
-
-        GameObject pe = GameObject.FindGameObjectWithTag("PE");
-        if (pe != null) portalEnd = pe.transform;
+        portalEnd = GameObject.FindGameObjectWithTag("PE")?.transform;
+        pokemonAnimator = GetComponent<Animator>();
         
-        // Lấy Animator component từ GameObject
-        animator = GetComponent<Animator>();
+        if (skillLevels == null || skillLevels.Count == 0)
+        {
+            enabled = false;
+            return;
+        }
+        
+        if (CurrentSkillData == null || CurrentSkillData.skillPrefab == null)
+        {
+            enabled = false;
+            return;
+        }
+        
+        EnableSkill();
     }
 
     private void Update()
     {
-        if (skillData == null || portalEnd == null) return;
+        if (CurrentSkillData == null) return;
         
-        // Liên tục tìm kẻ địch gần nhất và xoay về phía chúng
-        currentTarget = FindTarget();
+        // Cooldown countdown
+        if (cooldownTimer > 0) 
+        {
+            cooldownTimer -= Time.deltaTime;
+        }
+        
+        // Kiểm tra target còn hợp lệ không
         if (currentTarget != null)
         {
-            FaceTarget(currentTarget.transform);
-        }
-        
-        // Xử lý cooldown
-        cooldownTimer -= Time.deltaTime;
-        
-        // Khi hết cooldown và có target, set có thể cast skill và trigger animation
-        if (cooldownTimer <= 0f && currentTarget != null && !canCastSkill)
-        {
-            canCastSkill = true;
-            // Trigger animation attack - animation sẽ gọi CastSkillEvent thông qua animation event
-            if (animator != null)
+            if (!currentTarget.gameObject.activeInHierarchy)
             {
-                animator.SetBool("IsAttack", true);
+                currentTarget = null;
+                SetIdleAnimation();
+            }
+            else
+            {
+                float distToTarget = Vector3.Distance(transform.position, currentTarget.transform.position);
+                if (distToTarget > CurrentSkillData.baseRange)
+                {
+                    currentTarget = null;
+                    SetIdleAnimation();
+                }
             }
         }
-        else if (currentTarget == null && animator != null && canCastSkill)
+        
+        // Tìm target mới nếu không còn
+        if (currentTarget == null)
         {
-            // Nếu không có target, dừng animation tấn công
-            animator.SetBool("IsAttack", false);
-            canCastSkill = false;
+            currentTarget = FindNearestEnemy();
+            
+            if (currentTarget == null)
+            {
+                SetIdleAnimation();
+            }
+        }
+        
+        // Xoay về target và cast skill
+        if (currentTarget != null)
+        {
+            Vector3 direction = currentTarget.transform.position - transform.position;
+            direction.y = 0;
+            
+            if (direction != Vector3.zero)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            }
+            
+            if (cooldownTimer <= 0 && canCastSkill)
+            {
+                CastSkill();
+            }
+            else
+            {
+                SetIdleAnimation();
+            }
+        }
+        else
+        {
+            // Không còn target → hủy skill
+            if (activeSkillInstance != null)
+            {
+                Destroy(activeSkillInstance);
+                activeSkillInstance = null;
+            }
         }
     }
 
-    // Phương thức này sẽ được gọi từ animation event
+    public void UpgradeSkill()
+    {
+        if (!CanUpgrade)
+        {
+            return;
+        }
+        
+        if (activeSkillInstance != null)
+        {
+            Destroy(activeSkillInstance);
+            activeSkillInstance = null;
+        }
+        
+        int oldLevel = currentSkillLevel;
+        currentSkillLevel++;
+        cooldownTimer = 0f;
+    }
+
     public void CastSkillEvent()
     {
-        // Chỉ cast skill khi có thể và có target
-        if (canCastSkill && currentTarget != null)
-        {
-            CastSkill();
-            canCastSkill = false;
-            cooldownTimer = skillCooldown;
-        }
-    }
-
-    // Phương thức này sẽ được gọi từ animation event khi animation attack kết thúc
-    public void OnAttackAnimationEnd()
-    {
-        if (animator != null)
-        {
-            animator.SetBool("IsAttack", false);
-        }
+        if (CurrentSkillData == null || cooldownTimer > 0) return;
+        
+        CastSkill();
     }
 
     private void CastSkill()
     {
-        if (currentTarget == null) return;
-
-        // Spawn skill tại vị trí Pokemon
-        GameObject skillObj = Instantiate(skillData.skillPrefab, transform.position, Quaternion.identity);
-
-        var skillComp = skillObj.GetComponent<ISkill>();
-        if (skillComp != null)
+        if (CurrentSkillData?.skillPrefab == null || currentTarget == null) return;
+        
+        // ✅ NẾU ĐÃ CÓ SKILL → KHÔNG TẠO MỚI, CHỈ RESET COOLDOWN
+        if (activeSkillInstance != null)
         {
-            // Truyền target và các thông số khác
-            skillComp.Initialize(skillDamage, skillRange, currentTarget, null);
+            cooldownTimer = CurrentSkillData.baseCooldown;
+            return;
+        }
+        
+        // ✅ TẠO SKILL MỚI
+        activeSkillInstance = Instantiate(CurrentSkillData.skillPrefab, transform.position, Quaternion.identity);
+        
+        var skill = activeSkillInstance.GetComponent<ISkill>();
+        if (skill != null)
+        {
+            skill.Initialize(CurrentSkillData.baseDamage, CurrentSkillData.baseRange, currentTarget, pokemonAnimator);
+        }
+        else
+        {
+            Destroy(activeSkillInstance);
+            activeSkillInstance = null;
+            return;
+        }
+        
+        cooldownTimer = CurrentSkillData.baseCooldown;
+        
+        // ✅ TRIGGER ANIMATION
+        if (pokemonAnimator != null)
+        {
+            pokemonAnimator.SetBool("IsAttacking", true);
+            pokemonAnimator.SetTrigger("Skill");
         }
     }
 
-    // Hàm xoay mặt Pokemon về phía mục tiêu
-    private void FaceTarget(Transform target)
+    private EnemyHealth FindNearestEnemy()
     {
-        if (target == null) return;
+        if (portalEnd == null || CurrentSkillData == null) return null;
         
-        // Tính vector hướng từ Pokemon đến kẻ địch (chỉ trên mặt phẳng XZ)
-        Vector3 directionToTarget = target.position - transform.position;
-        directionToTarget.y = 0; // Bỏ qua trục Y để chỉ xoay theo mặt phẳng ngang
-        
-        // Chỉ xoay nếu vector hướng không phải vector 0
-        if (directionToTarget != Vector3.zero)
-        {
-            // Tính góc quay để nhìn về phía mục tiêu
-            Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
-            
-            // Xoay Pokemon từ từ về phía mục tiêu
-            transform.rotation = Quaternion.Slerp(
-                transform.rotation, 
-                targetRotation, 
-                rotationSpeed * Time.deltaTime
-            );
-        }
-    }
-
-    private EnemyHealth FindTarget()
-    {
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-        if (enemies.Length == 0) return null;
-
-        var inRange = enemies
-            .Select(e => e.GetComponent<EnemyHealth>())
-            .Where(eh => eh != null && Vector3.Distance(transform.position, eh.transform.position) <= skillRange);
-
-        if (!inRange.Any()) return null;
-
-        return inRange
-            .OrderBy(eh => Vector3.Distance(eh.transform.position, portalEnd.position))
-            .FirstOrDefault();
+        EnemyHealth nearest = null;
+        float closestDistToPortal = float.MaxValue;
+        
+        foreach (var enemy in enemies)
+        {
+            if (!enemy.activeInHierarchy) continue;
+            
+            var health = enemy.GetComponent<EnemyHealth>();
+            if (health == null) continue;
+            
+            float distToPlayer = Vector3.Distance(transform.position, enemy.transform.position);
+            if (distToPlayer > CurrentSkillData.baseRange) continue;
+            
+            float distToPortal = Vector3.Distance(enemy.transform.position, portalEnd.position);
+            if (distToPortal < closestDistToPortal)
+            {
+                closestDistToPortal = distToPortal;
+                nearest = health;
+            }
+        }
+        
+        return nearest;
     }
 
-    // Upgrade API
-    public void UpgradeDamage(float amount) => skillDamage += amount;
-    public void ReduceCooldown(float amount) => skillCooldown = Mathf.Max(0.1f, skillCooldown - amount);
-    public void IncreaseRange(float amount) => skillRange += amount;
+    private void SetIdleAnimation()
+    {
+        if (pokemonAnimator != null)
+        {
+            pokemonAnimator.SetBool("IsAttacking", false);
+        }
+    }
+
+    public void EnableSkill()
+    {
+        canCastSkill = true;
+    }
+
+    public void DisableSkill()
+    {
+        canCastSkill = false;
+        
+        SetIdleAnimation();
+        
+        if (activeSkillInstance != null)
+        {
+            Destroy(activeSkillInstance);
+            activeSkillInstance = null;
+        }
+    }
+    
+    public void DestroyActiveSkill()
+    {
+        if (activeSkillInstance != null)
+        {
+            Destroy(activeSkillInstance);
+            activeSkillInstance = null;
+        }
+    }
+
+    private void DebugLog(string message)
+    {
+        if (!enableDebugLogs) return;
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (CurrentSkillData == null) return;
+        
+        Gizmos.color = currentTarget != null ? Color.green : Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, CurrentSkillData.baseRange);
+        
+        if (currentTarget != null && currentTarget.gameObject.activeInHierarchy)
+        {
+            float dist = Vector3.Distance(transform.position, currentTarget.transform.position);
+            
+            if (dist <= CurrentSkillData.baseRange)
+            {
+                Gizmos.color = Color.green;
+            }
+            else
+            {
+                Gizmos.color = Color.red;
+            }
+            
+            Gizmos.DrawLine(transform.position, currentTarget.transform.position);
+            Gizmos.DrawWireSphere(currentTarget.transform.position, 0.5f);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (activeSkillInstance != null)
+        {
+            Destroy(activeSkillInstance);
+        }
+    }
 }

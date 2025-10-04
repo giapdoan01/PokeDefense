@@ -4,29 +4,35 @@ using System.Collections.Generic;
 
 public class PikachuSkill : MonoBehaviour, ISkill
 {
+    [Header("Settings")]
+    [SerializeField] private float duration = 10f;
+    [SerializeField] private float tickInterval = 0.5f;
+
     private float damage;
     private float range;
-    private Transform targetEnemy;
-
-    private float duration = 10f;       // Skill tồn tại 10 giây
-    private float tickInterval = 0.5f;  // Gây damage mỗi 0.5 giây
-
     private List<EnemyHealth> enemiesInRange = new List<EnemyHealth>();
+    private bool isActive;
 
-    public void Initialize(float dmg, float rng, EnemyHealth target, Animator animator = null)
+    public void Initialize(float damage, float range, EnemyHealth target = null, Animator pokemonAnimator = null)
     {
-        damage = dmg;
-        range = rng;
-        targetEnemy = target.transform;
+        this.damage = damage;
+        this.range = range;
+        this.isActive = true;
 
-        // Spawn skill tại vị trí enemy target
-        if (targetEnemy != null)
+        // Spawn tại vị trí target (vị trí cố định, KHÔNG DI CHUYỂN)
+        if (target != null)
         {
-            transform.position = targetEnemy.position + Vector3.up * 0.3f; // nâng lên một chút cho dễ nhìn
+            transform.position = target.transform.position + Vector3.up * 0.3f;
         }
 
         StartCoroutine(DamageOverTime());
         Destroy(gameObject, duration);
+    }
+
+    public void DeactivateSkill()
+    {
+        isActive = false;
+        Destroy(gameObject);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -55,16 +61,19 @@ public class PikachuSkill : MonoBehaviour, ISkill
 
     private IEnumerator DamageOverTime()
     {
-        while (true)
-        {
-            yield return new WaitForSeconds(tickInterval);
+        var wait = new WaitForSeconds(tickInterval);
 
+        while (isActive)
+        {
+            yield return wait;
+
+            // Xóa enemies đã chết
+            enemiesInRange.RemoveAll(e => e == null || !e.gameObject.activeInHierarchy);
+
+            // Gây damage cho TẤT CẢ enemies trong vùng AOE
             foreach (var enemy in enemiesInRange)
             {
-                if (enemy != null)
-                {
-                    enemy.TakeDamage(damage);
-                }
+                enemy.TakeDamage(damage);
             }
         }
     }
