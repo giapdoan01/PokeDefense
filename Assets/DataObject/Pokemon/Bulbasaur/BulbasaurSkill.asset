@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06efa8fc50267e740b1e813fef461251, type: 3}
+  m_Name: BulbasaurSkill
+  m_EditorClassIdentifier: 
+  skillName: BulbasaurSkill
+  skillPrefab: {fileID: 154223701137649724, guid: 01817786d150fc748a5cd55f1fedd88a, type: 3}
+  baseDamage: 15
+  baseCooldown: 2
+  baseRange: 4

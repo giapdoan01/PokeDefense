@@ -405,12 +405,7 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage: "\nBinding warning: Some generic clip(s) animate transforms that
-    are already bound by a Humanoid avatar. These transforms can only be changed
-    by Humanoid clips.\n\tTransform 'PG_root'\n\tTransform 'L_Forearm'\n\tTransform
-    'L_Calf'\n\tTransform 'R_Thigh'\n\tTransform 'L_Thigh'\n\tTransform 'PG_Neck'\n\tTransform
-    'L_UpperArm'\n\tTransform 'R_UpperArm'\n\tTransform 'Pelvis'\n\tTransform 'L_Foot'\n\tand
-    more ...\n\tFrom animation clip 'bd_attack'"
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
@@ -479,6 +474,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillLevels:
   - {fileID: 11400000, guid: c2d6161febb19d0499d5c8d0a9b51bbb, type: 2}
+  - {fileID: 11400000, guid: 1d8a43fea8e381944859d72ff628bb0b, type: 2}
   currentSkillLevel: 0
   rotationSpeed: 10
   enableDebugLogs: 1

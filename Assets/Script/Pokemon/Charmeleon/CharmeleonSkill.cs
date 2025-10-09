@@ -8,12 +8,14 @@ public class CharmeleonSkill : MonoBehaviour, ISkill
     [SerializeField] private float duration = 10f;
     [SerializeField] private float tickInterval = 0.5f;
     [SerializeField] private float heightOffset = 0.3f; // Offset trên đầu enemy
+    [SerializeField] private float moveSpeed = 10f; // Tốc độ di chuyển khi đổi target
 
     private float damage;
     private float range;
     private List<EnemyHealth> enemiesInRange = new List<EnemyHealth>();
     private bool isActive;
     private EnemyHealth currentTarget; // Target hiện tại để theo dõi
+    private Animator pokemonAnimator; // Lưu trữ tham chiếu đến animator
 
     public void Initialize(float damage, float range, EnemyHealth target = null, Animator pokemonAnimator = null)
     {
@@ -21,6 +23,7 @@ public class CharmeleonSkill : MonoBehaviour, ISkill
         this.range = range;
         this.isActive = true;
         this.currentTarget = target;
+        this.pokemonAnimator = pokemonAnimator; // Lưu trữ animator để sử dụng sau này
 
         // Spawn tại vị trí target (khởi tạo vị trí ban đầu)
         if (target != null)
@@ -83,6 +86,12 @@ public class CharmeleonSkill : MonoBehaviour, ISkill
                 enemy.TakeDamage(damage);
             }
         }
+
+        // Đảm bảo animation trở về idle khi kết thúc
+        if (pokemonAnimator != null)
+        {
+            pokemonAnimator.SetBool("IsAttacking", false);
+        }
     }
 
     private IEnumerator FollowTarget()
@@ -99,7 +108,16 @@ public class CharmeleonSkill : MonoBehaviour, ISkill
             // Di chuyển đến vị trí của target hiện tại
             if (currentTarget != null)
             {
-                transform.position = currentTarget.transform.position + Vector3.up * heightOffset;
+                // Tính toán vị trí đích
+                Vector3 targetPosition = currentTarget.transform.position + Vector3.up * heightOffset;
+                
+                // Di chuyển từ từ đến vị trí đích với vận tốc cố định
+                transform.position = Vector3.MoveTowards(
+                    transform.position, 
+                    targetPosition, 
+                    moveSpeed * Time.deltaTime
+                );
+                
                 // Đảm bảo giữ nguyên rotation x = -90
                 transform.rotation = Quaternion.Euler(-90, 0, 0);
             }

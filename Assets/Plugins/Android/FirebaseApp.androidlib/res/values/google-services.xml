@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@string/firebase_database_url,@string/gcm_defaultSenderId,@string/google_storage_bucket,@string/project_id,@string/google_api_key,@string/google_crash_reporting_api_key,@string/google_app_id">
+  <string name="firebase_database_url" translatable="false">https://pokedefense-51051-default-rtdb.asia-southeast1.firebasedatabase.app</string>
+  <string name="gcm_defaultSenderId" translatable="false">863575164351</string>
+  <string name="google_storage_bucket" translatable="false">pokedefense-51051.firebasestorage.app</string>
+  <string name="project_id" translatable="false">pokedefense-51051</string>
+  <string name="google_api_key" translatable="false">AIzaSyB1kmlxOWHjhgeuEppOx1gzfz2Rx5AxvLU</string>
+  <string name="google_crash_reporting_api_key" translatable="false">AIzaSyB1kmlxOWHjhgeuEppOx1gzfz2Rx5AxvLU</string>
+  <string name="google_app_id" translatable="false">1:863575164351:android:a6e39b618cf23f1e3b4d0a</string>
+</resources>

@@ -8,7 +8,14 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/InGamePlay.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/LoginRegisterScene.unity
+    guid: 1f6cb4f5072119641894c98aa063a3b3
+  - enabled: 1
+    path: Assets/Scenes/HomePage.unity
+    guid: bf68daa56976f3e47acaab5b995923be
   m_configObjects:
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 403f755072017404fa3b3792e7fa8ef1, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 4e7da83d1468e624e89a384449a51308, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

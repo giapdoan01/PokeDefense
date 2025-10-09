@@ -216,7 +216,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: b748d4a6e45345c4397d840c501789fb, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
@@ -292,6 +292,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8d0b8ad9ecddc0645ad6f7517d5ccda1, type: 2}
   currentSkillLevel: 0
   rotationSpeed: 20
+  enableDebugLogs: 1
 --- !u!114 &3431473309937621400
 MonoBehaviour:
   m_ObjectHideFlags: 0

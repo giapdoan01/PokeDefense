@@ -24,6 +24,9 @@ public class PokemonUIManager : MonoBehaviour
     [SerializeField] private Button removeButton;
     [SerializeField] private TextMeshProUGUI upgradeButtonText;
     
+    [Header("Debug Options")]
+    [SerializeField] private bool showEvolutionDebugLogs = true;
+    
     private PokemonEvolution currentPokemon;
 
     private void Awake()
@@ -121,7 +124,37 @@ public class PokemonUIManager : MonoBehaviour
         // ✅ BUTTON LOGIC
         bool canUpgrade = skillController.CanUpgrade;
         bool isMaxLevel = skillController.CurrentLevel >= skillController.MaxLevel;
+        
+        // Debug các điều kiện để hiểu tại sao nút Evolution không hiển thị
+        if (showEvolutionDebugLogs && isMaxLevel)
+        {
+            Debug.Log($"🔍 Checking evolution for {currentPokemon.name}:");
+            Debug.Log($"    • Is Max Level: {isMaxLevel}");
+            Debug.Log($"    • Has Data: {currentPokemon.Data != null}");
+            
+            if (currentPokemon.Data != null)
+            {
+                Debug.Log($"    • Data name: {currentPokemon.Data.pokemonName}");
+                Debug.Log($"    • Has Next Evolution: {currentPokemon.Data.nextEvolution != null}");
+                
+                if (currentPokemon.Data.nextEvolution != null)
+                {
+                    Debug.Log($"    • Next evolution: {currentPokemon.Data.nextEvolution.pokemonName}");
+                }
+                else
+                {
+                    Debug.Log($"    • ⚠️ nextEvolution is NULL! Check ScriptableObject data for {currentPokemon.Data.pokemonName}");
+                }
+            }
+        }
+        
         bool canEvolve = isMaxLevel && currentPokemon.Data != null && currentPokemon.Data.nextEvolution != null;
+        
+        // Chỉnh sửa để hiển thị thông tin debug về việc tiến hóa
+        if (showEvolutionDebugLogs)
+        {
+            Debug.Log($"👉 Can Evolve: {canEvolve} for {currentPokemon.name}");
+        }
         
         // ✅ NÚT UPGRADE
         if (upgradeButton != null)
@@ -174,7 +207,16 @@ public class PokemonUIManager : MonoBehaviour
         }
         else
         {
+            // Thêm debug chi tiết khi không thể tiến hóa
             Debug.LogWarning("⚠️ Cannot evolve! Conditions not met.");
+            if (skillController == null)
+                Debug.LogWarning("   • SkillController is null");
+            else if (skillController.CurrentLevel < skillController.MaxLevel)
+                Debug.LogWarning($"   • Not max level: {skillController.CurrentLevel}/{skillController.MaxLevel}");
+            else if (currentPokemon.Data == null)
+                Debug.LogWarning("   • Pokemon Data is null");
+            else if (currentPokemon.Data.nextEvolution == null)
+                Debug.LogWarning($"   • No evolution data for {currentPokemon.Data.pokemonName}");
         }
     }
 

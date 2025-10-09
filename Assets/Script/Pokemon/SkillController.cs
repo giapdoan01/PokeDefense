@@ -10,7 +10,10 @@ public class SkillController : MonoBehaviour
     [Header("Skill Settings")]
     [SerializeField] private float rotationSpeed = 10f;
     
-    [Header("🔍 DEBUG")]
+    [Header("🎯 Target Priority")]
+    [SerializeField] private bool prioritizeByWaypoint = true; // Toggle giữa 2 chế độ
+    
+    [Header("DEBUG")]
     [SerializeField] private bool enableDebugLogs = true;
     
     private float cooldownTimer;
@@ -18,7 +21,6 @@ public class SkillController : MonoBehaviour
     private Transform portalEnd;
     private EnemyHealth currentTarget;
     private Animator pokemonAnimator;
-    private GameObject activeSkillInstance;
     
     public SkillData CurrentSkillData => (skillLevels != null && skillLevels.Count > 0 && currentSkillLevel < skillLevels.Count) 
         ? skillLevels[currentSkillLevel] : null;
@@ -35,34 +37,38 @@ public class SkillController : MonoBehaviour
         
         if (skillLevels == null || skillLevels.Count == 0)
         {
+            Debug.LogError("❌ No skill levels assigned!");
             enabled = false;
             return;
         }
         
         if (CurrentSkillData == null || CurrentSkillData.skillPrefab == null)
         {
+            Debug.LogError("❌ Current skill data or prefab is null!");
             enabled = false;
             return;
         }
         
         EnableSkill();
+        DebugLog($"✅ SkillController initialized - Level {CurrentLevel}/{MaxLevel}");
     }
 
     private void Update()
     {
         if (CurrentSkillData == null) return;
         
-        // Cooldown countdown
+        // Cooldown timer
         if (cooldownTimer > 0) 
         {
             cooldownTimer -= Time.deltaTime;
         }
         
-        // Kiểm tra target còn hợp lệ không
+        // Check target validity
         if (currentTarget != null)
         {
             if (!currentTarget.gameObject.activeInHierarchy)
             {
+                DebugLog($"❌ Target {currentTarget.name} destroyed");
                 currentTarget = null;
                 SetIdleAnimation();
             }
@@ -71,13 +77,14 @@ public class SkillController : MonoBehaviour
                 float distToTarget = Vector3.Distance(transform.position, currentTarget.transform.position);
                 if (distToTarget > CurrentSkillData.baseRange)
                 {
+                    DebugLog($"❌ Target {currentTarget.name} out of range ({distToTarget:F1}m > {CurrentSkillData.baseRange}m)");
                     currentTarget = null;
                     SetIdleAnimation();
                 }
             }
         }
         
-        // Tìm target mới nếu không còn
+        // Find new target
         if (currentTarget == null)
         {
             currentTarget = FindNearestEnemy();
@@ -88,9 +95,10 @@ public class SkillController : MonoBehaviour
             }
         }
         
-        // Xoay về target và cast skill
+        // Attack target
         if (currentTarget != null)
         {
+            // Rotate to target
             Vector3 direction = currentTarget.transform.position - transform.position;
             direction.y = 0;
             
@@ -100,22 +108,17 @@ public class SkillController : MonoBehaviour
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             }
             
+            // Cast skill
             if (cooldownTimer <= 0 && canCastSkill)
             {
-                CastSkill();
+                if (pokemonAnimator != null && !pokemonAnimator.GetBool("IsAttacking"))
+                {
+                    pokemonAnimator.SetBool("IsAttacking", true);
+                }
             }
-            else
+            else if (cooldownTimer > 0)
             {
                 SetIdleAnimation();
-            }
-        }
-        else
-        {
-            // Không còn target → hủy skill
-            if (activeSkillInstance != null)
-            {
-                Destroy(activeSkillInstance);
-                activeSkillInstance = null;
             }
         }
     }
@@ -124,18 +127,15 @@ public class SkillController : MonoBehaviour
     {
         if (!CanUpgrade)
         {
+            Debug.LogWarning("⚠️ Already at max level!");
             return;
-        }
-        
-        if (activeSkillInstance != null)
-        {
-            Destroy(activeSkillInstance);
-            activeSkillInstance = null;
         }
         
         int oldLevel = currentSkillLevel;
         currentSkillLevel++;
         cooldownTimer = 0f;
+        
+        DebugLog($"⬆️ Skill upgraded: Level {oldLevel + 1} → {CurrentLevel}");
     }
 
     public void CastSkillEvent()
@@ -149,65 +149,123 @@ public class SkillController : MonoBehaviour
     {
         if (CurrentSkillData?.skillPrefab == null || currentTarget == null) return;
         
-        // ✅ NẾU ĐÃ CÓ SKILL → KHÔNG TẠO MỚI, CHỈ RESET COOLDOWN
-        if (activeSkillInstance != null)
-        {
-            cooldownTimer = CurrentSkillData.baseCooldown;
-            return;
-        }
+        GameObject newSkill = Instantiate(
+            CurrentSkillData.skillPrefab, 
+            transform.position, 
+            Quaternion.identity
+        );
         
-        // ✅ TẠO SKILL MỚI
-        activeSkillInstance = Instantiate(CurrentSkillData.skillPrefab, transform.position, Quaternion.identity);
+        newSkill.name = $"Skill_{Time.time:F1}s";
         
-        var skill = activeSkillInstance.GetComponent<ISkill>();
+        var skill = newSkill.GetComponent<ISkill>();
         if (skill != null)
         {
-            skill.Initialize(CurrentSkillData.baseDamage, CurrentSkillData.baseRange, currentTarget, pokemonAnimator);
+            skill.Initialize(
+                CurrentSkillData.baseDamage, 
+                CurrentSkillData.baseRange, 
+                currentTarget, 
+                pokemonAnimator
+            );
+            
+            DebugLog($"🌊 Skill spawned: {newSkill.name} → Target: {currentTarget.name}");
         }
         else
         {
-            Destroy(activeSkillInstance);
-            activeSkillInstance = null;
+            Debug.LogError("❌ NO ISkill COMPONENT!");
+            Destroy(newSkill);
             return;
         }
         
         cooldownTimer = CurrentSkillData.baseCooldown;
-        
-        // ✅ TRIGGER ANIMATION
-        if (pokemonAnimator != null)
-        {
-            pokemonAnimator.SetBool("IsAttacking", true);
-            pokemonAnimator.SetTrigger("Skill");
-        }
     }
 
+    // ✅ LOGIC TÌM TARGET MỚI (DỰA VÀO WAYPOINT)
     private EnemyHealth FindNearestEnemy()
     {
-        if (portalEnd == null || CurrentSkillData == null) return null;
+        if (CurrentSkillData == null) return null;
         
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-        EnemyHealth nearest = null;
-        float closestDistToPortal = float.MaxValue;
+        EnemyHealth bestTarget = null;
         
-        foreach (var enemy in enemies)
+        if (prioritizeByWaypoint)
         {
-            if (!enemy.activeInHierarchy) continue;
+            // ✅ CHỌN ENEMY GẦN CỬA NHẤT (DỰA VÀO WAYPOINT INDEX)
+            int highestWaypointIndex = -1;
+            float highestProgress = -1f;
+            float closestDistAtSameProgress = float.MaxValue;
             
-            var health = enemy.GetComponent<EnemyHealth>();
-            if (health == null) continue;
-            
-            float distToPlayer = Vector3.Distance(transform.position, enemy.transform.position);
-            if (distToPlayer > CurrentSkillData.baseRange) continue;
-            
-            float distToPortal = Vector3.Distance(enemy.transform.position, portalEnd.position);
-            if (distToPortal < closestDistToPortal)
+            foreach (var enemy in enemies)
             {
-                closestDistToPortal = distToPortal;
-                nearest = health;
+                if (!enemy.activeInHierarchy) continue;
+                
+                // Kiểm tra trong range
+                float distToPlayer = Vector3.Distance(transform.position, enemy.transform.position);
+                if (distToPlayer > CurrentSkillData.baseRange) continue;
+                
+                var health = enemy.GetComponent<EnemyHealth>();
+                if (health == null) continue;
+                
+                var controller = enemy.GetComponent<EnemyController>();
+                if (controller == null) continue;
+                
+                int waypointIndex = controller.CurrentWaypointIndex;
+                float progress = controller.ProgressPercent;
+                
+                // Ưu tiên enemy có progress cao hơn (gần cửa hơn)
+                if (waypointIndex > highestWaypointIndex || 
+                    (waypointIndex == highestWaypointIndex && progress > highestProgress))
+                {
+                    highestWaypointIndex = waypointIndex;
+                    highestProgress = progress;
+                    closestDistAtSameProgress = distToPlayer;
+                    bestTarget = health;
+                    
+                    DebugLog($"🎯 New priority target: {enemy.name} (WP {waypointIndex}, Progress {progress:F1}%)");
+                }
+                // Nếu cùng progress, chọn enemy gần pokemon hơn
+                else if (waypointIndex == highestWaypointIndex && 
+                         Mathf.Abs(progress - highestProgress) < 1f && 
+                         distToPlayer < closestDistAtSameProgress)
+                {
+                    closestDistAtSameProgress = distToPlayer;
+                    bestTarget = health;
+                    
+                    DebugLog($"🎯 Closer target at same progress: {enemy.name} (Dist {distToPlayer:F1}m)");
+                }
+            }
+        }
+        else
+        {
+            // ❌ CHỌN ENEMY GẦN PE NHẤT (LOGIC CŨ)
+            if (portalEnd == null)
+            {
+                Debug.LogWarning("⚠️ Portal End not found! Using waypoint mode instead.");
+                prioritizeByWaypoint = true;
+                return FindNearestEnemy();
+            }
+            
+            float closestDistToPortal = float.MaxValue;
+            
+            foreach (var enemy in enemies)
+            {
+                if (!enemy.activeInHierarchy) continue;
+                
+                var health = enemy.GetComponent<EnemyHealth>();
+                if (health == null) continue;
+                
+                float distToPlayer = Vector3.Distance(transform.position, enemy.transform.position);
+                if (distToPlayer > CurrentSkillData.baseRange) continue;
+                
+                float distToPortal = Vector3.Distance(enemy.transform.position, portalEnd.position);
+                if (distToPortal < closestDistToPortal)
+                {
+                    closestDistToPortal = distToPortal;
+                    bestTarget = health;
+                }
             }
         }
         
-        return nearest;
+        return bestTarget;
     }
 
     private void SetIdleAnimation()
@@ -221,42 +279,36 @@ public class SkillController : MonoBehaviour
     public void EnableSkill()
     {
         canCastSkill = true;
+        DebugLog("✅ Skill enabled");
     }
 
     public void DisableSkill()
     {
         canCastSkill = false;
-        
         SetIdleAnimation();
-        
-        if (activeSkillInstance != null)
-        {
-            Destroy(activeSkillInstance);
-            activeSkillInstance = null;
-        }
+        DebugLog("❌ Skill disabled");
     }
     
     public void DestroyActiveSkill()
     {
-        if (activeSkillInstance != null)
-        {
-            Destroy(activeSkillInstance);
-            activeSkillInstance = null;
-        }
+        // Skill sẽ tự destroy theo duration
     }
 
     private void DebugLog(string message)
     {
         if (!enableDebugLogs) return;
+        Debug.Log($"[{gameObject.name}] {message}");
     }
 
     private void OnDrawGizmos()
     {
         if (CurrentSkillData == null) return;
         
+        // Vẽ range
         Gizmos.color = currentTarget != null ? Color.green : Color.yellow;
         Gizmos.DrawWireSphere(transform.position, CurrentSkillData.baseRange);
         
+        // Vẽ line đến target
         if (currentTarget != null && currentTarget.gameObject.activeInHierarchy)
         {
             float dist = Vector3.Distance(transform.position, currentTarget.transform.position);
@@ -272,14 +324,20 @@ public class SkillController : MonoBehaviour
             
             Gizmos.DrawLine(transform.position, currentTarget.transform.position);
             Gizmos.DrawWireSphere(currentTarget.transform.position, 0.5f);
-        }
-    }
-
-    private void OnDestroy()
-    {
-        if (activeSkillInstance != null)
-        {
-            Destroy(activeSkillInstance);
+            
+            #if UNITY_EDITOR
+            // ✅ HIỂN THỊ WAYPOINT INDEX VÀ PROGRESS
+            var controller = currentTarget.GetComponent<EnemyController>();
+            if (controller != null)
+            {
+                UnityEditor.Handles.Label(
+                    currentTarget.transform.position + Vector3.up * 2f,
+                    $"WP: {controller.CurrentWaypointIndex}/{controller.TotalWaypoints}\n" +
+                    $"Progress: {controller.ProgressPercent:F1}%\n" +
+                    $"Dist: {dist:F1}m"
+                );
+            }
+            #endif
         }
     }
 }

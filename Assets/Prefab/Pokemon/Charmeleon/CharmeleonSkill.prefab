@@ -4777,7 +4777,7 @@ MonoBehaviour:
     shakesDelay: 0
   animatedLights:
   - light: {fileID: 861338508240999908}
-    loop: 0
+    loop: 1
     animateIntensity: 1
     intensityStart: 5
     intensityEnd: 0
@@ -4888,6 +4888,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   duration: 10
   tickInterval: 0.5
+  heightOffset: 0.3
+  moveSpeed: 10
 --- !u!135 &8329077623202667235
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -9659,7 +9661,7 @@ Transform:
   m_GameObject: {fileID: 7223065353494236078}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 3.4}
+  m_LocalPosition: {x: 0, y: 0, z: 1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9677,7 +9679,7 @@ Light:
   m_Type: 2
   m_Color: {r: 1, g: 0.69803923, b: 0.3529412, a: 1}
   m_Intensity: 0
-  m_Range: 3
+  m_Range: 1.5
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10

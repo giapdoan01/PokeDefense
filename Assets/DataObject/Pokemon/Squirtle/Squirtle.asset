@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c7acda2a2a5e364bb1dd2dd3338f6f9, type: 3}
+  m_Name: Squirtle
+  m_EditorClassIdentifier: 
+  pokemonName: Squirtle
+  type: Water
+  prefab: {fileID: 1702001448574992973, guid: 347f41ff4cf6d2c4ab5ec810c01097a9, type: 3}
+  nextEvolution: {fileID: 11400000, guid: 8f3db4c524b01304fb73c71a70309568, type: 2}

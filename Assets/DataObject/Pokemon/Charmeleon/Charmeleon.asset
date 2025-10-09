@@ -15,4 +15,4 @@ MonoBehaviour:
   pokemonName: Charmeleon
   type: Fire
   prefab: {fileID: 4029865546413614622, guid: 2e35b435c287d744c8690e49f74f6124, type: 3}
-  nextEvolution: {fileID: 0}
+  nextEvolution: {fileID: 11400000, guid: b7cc25eecc7b53d41b34fec5515de7ea, type: 2}
