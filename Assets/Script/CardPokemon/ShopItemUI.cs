@@ -47,6 +47,13 @@ public class ShopItemUI : MonoBehaviour
         {
             buyButton.onClick.RemoveAllListeners();
             buyButton.onClick.AddListener(OnBuyClicked);
+            
+            // Disable button if player already owns this card
+            if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.HasCard(card.id))
+            {
+                buyButton.interactable = false;
+                buyButton.GetComponentInChildren<TMP_Text>().text = "Đã sở hữu";
+            }
         }
     }
     
@@ -76,6 +83,31 @@ public class ShopItemUI : MonoBehaviour
     
     void OnBuyClicked()
     {
-        Debug.Log($"Mua card: {cardData.name} - Giá: {cardData.gemPrice} gems");
+        if (PlayerDataManager.Instance == null) return;
+        
+        // Kiểm tra nếu người chơi đã sở hữu thẻ này
+        if (PlayerDataManager.Instance.HasCard(cardData.id))
+        {
+            Debug.Log($"Đã sở hữu card: {cardData.name}");
+            return;
+        }
+        
+        // Thử chi tiêu Gem để mua thẻ
+        if (PlayerDataManager.Instance.SpendGem(cardData.gemPrice))
+        {
+            // Thành công mua thẻ, thêm vào danh sách sở hữu
+            PlayerDataManager.Instance.AddCard(cardData.id);
+            
+            Debug.Log($"Đã mua card: {cardData.name} với giá {cardData.gemPrice} gems");
+            
+            // Cập nhật UI
+            buyButton.interactable = false;
+            buyButton.GetComponentInChildren<TMP_Text>().text = "Đã sở hữu";
+        }
+        else
+        {
+            Debug.Log($"Không đủ gem để mua card: {cardData.name}");
+            // TODO: Hiển thị thông báo không đủ gem
+        }
     }
 }

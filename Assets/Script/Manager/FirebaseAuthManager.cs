@@ -1,11 +1,12 @@
 using Firebase.Auth;
-using System.Collections;
-using System.Collections.Generic;
+using Firebase; 
+using Firebase.Database;
+using Firebase.Extensions;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using Firebase.Extensions;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 public class FirebaseAuthManager : MonoBehaviour
 {
@@ -23,93 +24,283 @@ public class FirebaseAuthManager : MonoBehaviour
     public TMP_InputField loginPasswordInput;
     public Button loginButton;
     public Button goToRegisterButton;
+    
+    [Header("Status (Optional)")]
+    public TextMeshProUGUI statusText;
+    
     private FirebaseAuth auth;
+    private DatabaseReference databaseRef;
 
     void Start()
     {
         auth = FirebaseAuth.DefaultInstance;
+        databaseRef = FirebaseDatabase.DefaultInstance.RootReference;
+        
         registerButton.onClick.AddListener(RegisterAccount);
         goToLoginButton.onClick.AddListener(GoToLoginPanel);
         loginButton.onClick.AddListener(LoginAccount);
         goToRegisterButton.onClick.AddListener(GoToRegisterPanel);
+        
         registerPanel.SetActive(false);
         loginPanel.SetActive(true);
     }
 
+    // ==================== REGISTER ====================
+    
     public void RegisterAccount()
     {
         string email = emailInput.text;
         string password = passwordInput.text;
         string confirmPassword = confirmPasswordInput.text;
+        
         if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(confirmPassword))
         {
-            Debug.Log("Please fill in all fields.");
+            ShowStatus("Vui lòng điền đầy đủ!");
             return;
         }
+        
         if (password != confirmPassword)
         {
-            Debug.Log("Passwords do not match.");
+            ShowStatus("Mật khẩu không khớp!");
             return;
         }
+        
+        if (password.Length < 6)
+        {
+            ShowStatus("Mật khẩu phải có ít nhất 6 ký tự!");
+            return;
+        }
+        
+        ShowStatus("Đang tạo tài khoản...");
+        
         auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(task =>
         {
             if (task.IsCanceled)
             {
-                Debug.LogError("CreateUserWithEmailAndPasswordAsync was canceled.");
+                ShowStatus("Đăng ký bị hủy!");
                 return;
             }
+            
             if (task.IsFaulted)
             {
-                Debug.LogError("CreateUserWithEmailAndPasswordAsync encountered an error: " + task.Exception);
+                ShowStatus($"Lỗi: {GetErrorMessage(task.Exception)}");
                 return;
             }
+            
             if (task.IsCompleted)
             {
-                Debug.LogFormat("Firebase user created successfully");
+                FirebaseUser newUser = task.Result.User;
+                Debug.Log($"Firebase user created: {newUser.UserId}");
+                
+                CreateNewPlayerData(newUser.UserId, email);
             }
         });
     }
-
-    public void GoToRegisterPanel()
+    
+    void CreateNewPlayerData(string userId, string email)
     {
-        registerPanel.SetActive(true);
-        loginPanel.SetActive(false);
-    }
-    public void GoToLoginPanel()
-    {
-        registerPanel.SetActive(false);
-        loginPanel.SetActive(true);
+        ShowStatus("Đang tạo dữ liệu...");
+        
+        PlayerData newPlayerData = new PlayerData
+        {
+            userId = userId,
+            username = GetUsernameFromEmail(email),
+            gem = 1000, 
+            mapProgress = new Dictionary<int, MapProgressData>(),
+            ownedCardIds = new List<string>(),
+            cardDeck = new System.Collections.Generic.List<string>()
+        };
+        
+        string json = JsonUtility.ToJson(newPlayerData);
+        
+        databaseRef.Child("users").Child(userId).SetRawJsonValueAsync(json).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsFaulted)
+            {
+                ShowStatus($"Lỗi lưu dữ liệu!");
+                return;
+            }
+            
+            if (task.IsCompleted)
+            {
+                Debug.Log($"PlayerData created");
+                ShowStatus("Đăng ký thành công!");
+                
+                Invoke(nameof(GoToLoginPanel), 1.5f);
+            }
+        });
     }
     
-
+    // ==================== LOGIN ====================
+    
     public void LoginAccount()
     {
         string email = loginEmailInput.text;
         string password = loginPasswordInput.text;
+        
         if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
         {
-            Debug.Log("Please fill in all fields.");
+            ShowStatus("Vui lòng điền đầy đủ!");
             return;
         }
+        
+        ShowStatus("Đang đăng nhập...");
 
         auth.SignInWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(task =>
         {
             if (task.IsCanceled)
             {
-                Debug.LogError("SignInWithEmailAndPasswordAsync was canceled.");
+                ShowStatus("Đăng nhập bị hủy!");
                 return;
             }
+            
             if (task.IsFaulted)
             {
-                Debug.LogError("SignInWithEmailAndPasswordAsync encountered an error: " + task.Exception);
+                ShowStatus($"Lỗi: {GetErrorMessage(task.Exception)}");
                 return;
             }
+            
             if (task.IsCompleted)
             {
-                Debug.LogFormat("User signed in successfully");
-                SceneManager.LoadScene("HomePage");
+                FirebaseUser user = task.Result.User;
+                Debug.Log($"User signed in: {user.UserId}");
+                
+                LoadPlayerData(user.UserId);
             }
         });
     }
-
+    
+    void LoadPlayerData(string userId)
+    {
+        ShowStatus("Đang tải dữ liệu...");
+        
+        databaseRef.Child("users").Child(userId).GetValueAsync().ContinueWithOnMainThread(task =>
+        {
+            if (task.IsFaulted)
+            {
+                ShowStatus($"Lỗi tải dữ liệu!");
+                return;
+            }
+            
+            if (task.IsCompleted)
+            {
+                DataSnapshot snapshot = task.Result;
+                
+                if (snapshot.Exists)
+                {
+                    PlayerData playerData = ParsePlayerData(snapshot);
+                    
+                    Debug.Log($"PlayerData loaded: {playerData.username} - {playerData.gem} gems");
+                    
+                    // Lưu vào PlayerPrefs
+                    string json = JsonUtility.ToJson(playerData);
+                    PlayerPrefs.SetString("PlayerData", json);
+                    PlayerPrefs.SetString("UserId", playerData.userId);
+                    PlayerPrefs.Save();
+                    
+                    ShowStatus("Đăng nhập thành công!");
+                    
+                    Invoke(nameof(LoadHomePage), 1f);
+                }
+                else
+                {
+                    ShowStatus("Không tìm thấy dữ liệu!");
+                }
+            }
+        });
+    }
+    
+    PlayerData ParsePlayerData(DataSnapshot snapshot)
+    {
+        PlayerData data = new PlayerData
+        {
+            userId = snapshot.Child("userId").Value?.ToString() ?? "",
+            username = snapshot.Child("username").Value?.ToString() ?? "Player",
+            gem = int.Parse(snapshot.Child("gem").Value?.ToString() ?? "0"),
+            mapProgress = new Dictionary<int, MapProgressData>(),
+            ownedCardIds = new List<string>(),
+            cardDeck = new System.Collections.Generic.List<string>()
+        };
+        
+        return data;
+    }
+    
+    // ==================== NAVIGATION ====================
+    
+    public void GoToRegisterPanel()
+    {
+        registerPanel.SetActive(true);
+        loginPanel.SetActive(false);
+        ClearInputs();
+    }
+    
+    public void GoToLoginPanel()
+    {
+        registerPanel.SetActive(false);
+        loginPanel.SetActive(true);
+        ClearInputs();
+    }
+    
+    void LoadHomePage()
+    {
+        GameSceneManager.Instance.GotoHomePage();
+                    
+    }
+    
+    // ==================== UTILITIES ====================
+    
+    void ShowStatus(string message)
+    {
+        Debug.Log(message);
+        if (statusText != null)
+            statusText.text = message;
+    }
+    
+    void ClearInputs()
+    {
+        emailInput.text = "";
+        passwordInput.text = "";
+        confirmPasswordInput.text = "";
+        loginEmailInput.text = "";
+        loginPasswordInput.text = "";
+        
+        if (statusText != null)
+            statusText.text = "";
+    }
+    
+    string GetUsernameFromEmail(string email)
+    {
+        int atIndex = email.IndexOf('@');
+        if (atIndex > 0)
+        {
+            return email.Substring(0, atIndex);
+        }
+        return "Player";
+    }
+    
+    string GetErrorMessage(System.AggregateException exception)
+    {
+        if (exception.InnerException is FirebaseException firebaseEx)
+        {
+            var errorCode = (AuthError)firebaseEx.ErrorCode;
+            
+            switch (errorCode)
+            {
+                case AuthError.EmailAlreadyInUse:
+                    return "Email đã được sử dụng!";
+                case AuthError.InvalidEmail:
+                    return "Email không hợp lệ!";
+                case AuthError.WeakPassword:
+                    return "Mật khẩu quá yếu!";
+                case AuthError.WrongPassword:
+                    return "Sai mật khẩu!";
+                case AuthError.UserNotFound:
+                    return "Không tìm thấy tài khoản!";
+                default:
+                    return errorCode.ToString();
+            }
+        }
+        
+        return exception.Message;
+    }
 }

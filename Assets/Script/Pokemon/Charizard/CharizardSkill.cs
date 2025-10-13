@@ -16,8 +16,6 @@ public class CharizardSkill : MonoBehaviour, ISkill
         this.range = range;
         this.targetEnemy = target;
         
-        Debug.Log($"🔥 CharizardSkill spawned at {transform.position} for target {(target != null ? target.name : "NULL")}");
-        
         // Nếu có target, gây damage ngay
         if (targetEnemy != null)
         {
@@ -36,7 +34,5 @@ public class CharizardSkill : MonoBehaviour, ISkill
 
         targetEnemy.TakeDamage(damage);
         hasDealDamage = true;
-
-        Debug.Log($"🔥 Charizard Skill dealt {damage} damage to {targetEnemy.name}");
     }
 }

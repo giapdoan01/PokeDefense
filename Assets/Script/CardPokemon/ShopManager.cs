@@ -10,11 +10,16 @@ public class ShopManager : MonoBehaviour
     public Transform shopContainer;
     public GameObject shopItemPrefab;
     public TMP_Text totalCardsText;
-    
+    public Button ReturnHomeButton;
+
     void Start()
-    {   
+    {
         // Load cards
         ShowAllCards();
+        // Return home
+        if (ReturnHomeButton != null)
+            ReturnHomeButton.onClick.AddListener(OnReturnHomeClicked);
+    
         
     }
     
@@ -33,7 +38,7 @@ public class ShopManager : MonoBehaviour
     {
         StartCoroutine(DisplayCardsCoroutine(cards));
     }
-    
+
     IEnumerator DisplayCardsCoroutine(List<CardData> cards)
     {
         // Clear old items
@@ -41,9 +46,9 @@ public class ShopManager : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
-        
+
         yield return null;
-        
+
         // Check empty
         if (cards.Count == 0)
         {
@@ -51,32 +56,36 @@ public class ShopManager : MonoBehaviour
                 totalCardsText.text = "Không có card nào";
             yield break;
         }
-        
+
         // Update count
         if (totalCardsText != null)
             totalCardsText.text = $"Tổng: {cards.Count} cards";
-        
+
         // Instantiate items
         foreach (CardData card in cards)
         {
             GameObject itemObj = Instantiate(shopItemPrefab, shopContainer);
-            
+
             // Force reset transform
             itemObj.transform.localScale = Vector3.one;
             itemObj.transform.localRotation = Quaternion.identity;
-            
+
             // Setup UI
             ShopItemUI itemUI = itemObj.GetComponent<ShopItemUI>();
             if (itemUI != null)
             {
                 itemUI.Setup(card);
             }
-            
+
             yield return null;
         }
-        
+
         Canvas.ForceUpdateCanvases();
         LayoutRebuilder.ForceRebuildLayoutImmediate(shopContainer.GetComponent<RectTransform>());
-        
+
+    }
+    void OnReturnHomeClicked()
+    {
+        GameSceneManager.Instance.GotoHomePage();
     }
 }

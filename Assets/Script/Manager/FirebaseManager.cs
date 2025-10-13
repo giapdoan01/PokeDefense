@@ -44,11 +44,11 @@ public class FirebaseManager : MonoBehaviour
                 // Firebase sẵn sàng
                 databaseRef = FirebaseDatabase.DefaultInstance.RootReference;
                 isFirebaseReady = true;
-                Debug.Log("✅ Firebase đã sẵn sàng!");
+                Debug.Log("Firebase đã sẵn sàng!");
             }
             else
             {
-                Debug.LogError($"❌ Firebase lỗi: {task.Result}");
+                Debug.LogError($"Firebase lỗi: {task.Result}");
             }
         });
     }

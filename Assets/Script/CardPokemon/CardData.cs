@@ -1,9 +1,6 @@
 using System;
 using UnityEngine;
 
-/// <summary>
-/// Dữ liệu thẻ bài - CHỈ 5 THUỘC TÍNH
-/// </summary>
 [Serializable]
 public class CardData
 {
@@ -12,6 +9,9 @@ public class CardData
     public string name;
     public int gemPrice;
     public string type;
+    public int coinInGame;
+    public GameObject pokemonGhostPrefab;
+    public GameObject pokemonPrefab; 
     
     public CardData() { }
     

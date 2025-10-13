@@ -45,7 +45,7 @@ public class EnemyHealth : MonoBehaviour
     {
         Debug.Log($"Enemy {gameObject.name} died, adding 10 money");
         // Cộng tiền cho player
-        PlayerStats.Instance.AddMoney(10);
+        PlayerStats.Instance.AddCoin(10);
 
         // Trả về pool
         gameObject.SetActive(false);

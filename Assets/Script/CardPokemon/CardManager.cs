@@ -29,7 +29,7 @@ public class CardManager : MonoBehaviour
     
     public List<CardData> GetAllCards()
     {
-        return new List<CardData>(allCards); // Return copy để tránh modify trực tiếp
+        return new List<CardData>(allCards);
     }
 
     public CardData GetCardById(string cardId)
@@ -50,18 +50,16 @@ public class CardManager : MonoBehaviour
             card.gemPrice >= minPrice && card.gemPrice <= maxPrice
         ).ToList();
     }
-    
+
     public List<CardData> SearchCardsByName(string searchText)
     {
         if (string.IsNullOrEmpty(searchText))
             return GetAllCards();
-            
-        return allCards.Where(card => 
+
+        return allCards.Where(card =>
             card.name.IndexOf(searchText, System.StringComparison.OrdinalIgnoreCase) >= 0
         ).ToList();
     }
-    
-
     public bool AddCard(CardData newCard)
     {
         if (allCards.Any(card => card.id == newCard.id))
