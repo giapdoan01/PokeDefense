@@ -3,12 +3,12 @@ using UnityEngine.EventSystems;
 
 public class DragDropPokemon : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    public GameObject pokemonPrefab;  // prefab thật
-    public GameObject ghostPrefab;    // prefab giả (trong suốt)
+    public GameObject pokemonPrefab;
+    public GameObject ghostPrefab;
 
     private GameObject ghostInstance;
     private PlacementSlot currentSlot;
-    private CardData cardData;  // Thêm biến CardData
+    private CardData cardData;
 
     // Phương thức để nhận CardData từ DeckCardUIInBattle
     public void SetCardData(CardData data)
@@ -16,44 +16,36 @@ public class DragDropPokemon : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         cardData = data;
         if (data == null)
         {
-            Debug.LogError("❌ SetCardData được gọi với data là null!");
-        }
-        else
-        {
-            Debug.Log($"✅ Đã gán CardData: {data.name}, Giá: {data.coinInGame}");
+            Debug.LogError("SetCardData được gọi với data là null!");
         }
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        // Kiểm tra CardData và tiền
         if (cardData == null)
         {
-            Debug.LogError("❌ CardData là null! Hãy đảm bảo đã gọi SetCardData() trước khi kéo.");
+            Debug.LogError("CardData là null! Hãy đảm bảo đã gọi SetCardData() trước khi kéo.");
             return;
         }
 
-        // Kiểm tra có đủ tiền không
         if (PlayerStats.Instance == null)
         {
-            Debug.LogError("❌ PlayerStats.Instance là null!");
+            Debug.LogError("PlayerStats.Instance là null!");
             return;
         }
 
         if (PlayerStats.Instance.coin < cardData.coinInGame)
         {
-            Debug.LogWarning($"⚠️ Không đủ tiền! Cần: {cardData.coinInGame}, Có: {PlayerStats.Instance.coin}");
+            Debug.LogWarning($"Không đủ tiền! Cần: {cardData.coinInGame}, Có: {PlayerStats.Instance.coin}");
             return;
         }
 
-        // Tạo ghost prefab
         ghostInstance = Instantiate(ghostPrefab);
-        ghostInstance.SetActive(false); // ban đầu chưa hiện
+        ghostInstance.SetActive(false);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        // Nếu chưa có ghost instance (có thể do không đủ tiền), dừng xử lý
         if (ghostInstance == null) return;
 
         Ray ray = Camera.main.ScreenPointToRay(eventData.position);
@@ -87,24 +79,19 @@ public class DragDropPokemon : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
         if (currentSlot != null && cardData != null && PlayerStats.Instance != null)
         {
-            // Kiểm tra lại tiền (phòng trường hợp thay đổi trong quá trình kéo)
             if (PlayerStats.Instance.coin >= cardData.coinInGame)
             {
-                // Trừ tiền
                 PlayerStats.Instance.SpendCoin(cardData.coinInGame);
                 
-                // Spawn Pokemon
                 currentSlot.PlacePokemon(pokemonPrefab);
                 
-                Debug.Log($"✅ Đã tạo {cardData.name} với giá {cardData.coinInGame}. Số tiền còn lại: {PlayerStats.Instance.coin}");
+                Debug.Log($"Đã tạo {cardData.name} với giá {cardData.coinInGame}. Số tiền còn lại: {PlayerStats.Instance.coin}");
             }
             else
             {
-                Debug.LogWarning($"⚠️ Không đủ tiền để tạo Pokemon! Cần: {cardData.coinInGame}, Có: {PlayerStats.Instance.coin}");
+                Debug.LogWarning($"Không đủ tiền để tạo Pokemon! Cần: {cardData.coinInGame}, Có: {PlayerStats.Instance.coin}");
             }
         }
-
-        // Xóa ghost dù có tạo Pokemon thành công hay không
         if (ghostInstance != null)
             Destroy(ghostInstance);
     }

@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class WartortleSkill : MonoBehaviour, ISkill
+public class WartortleSkill : MonoBehaviour, ISkill, ISlowEffectSource
 {
     [Header("Settings")]
     [SerializeField] private float duration = 10f;
@@ -13,6 +13,17 @@ public class WartortleSkill : MonoBehaviour, ISkill
     private float range;
     private List<EnemyHealth> enemiesInRange = new List<EnemyHealth>();
     private bool isActive;
+    private int effectID;
+
+    // ✅ Implement ISlowEffectSource
+    public int EffectID => effectID;
+    public float SlowPercent => slowPercent;
+
+    private void Awake()
+    {
+        // Tạo một ID duy nhất cho effect
+        effectID = GetInstanceID();
+    }
 
     public void Initialize(float damage, float range, EnemyHealth target = null, Animator pokemonAnimator = null)
     {
@@ -69,7 +80,7 @@ public class WartortleSkill : MonoBehaviour, ISkill
                 EnemyController ec = other.GetComponent<EnemyController>();
                 if (ec != null)
                 {
-                    ec.ApplySlowEffect(this, slowPercent);
+                    ec.ApplySlowEffect(this);
                     Debug.Log($"Slowed {other.name} to {slowPercent * 100}% speed");
                 }
             }

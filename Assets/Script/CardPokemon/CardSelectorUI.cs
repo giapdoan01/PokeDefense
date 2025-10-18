@@ -8,8 +8,8 @@ public class CardSelectorUI : MonoBehaviour
     public Image cardImage;
     public TMP_Text cardNameText;
     public Button selectButton;
-    public GameObject selectedFrame; // Khung viền khi được chọn
-    public GameObject selectButtonGameObject; // Đối tượng nút chọn để ẩn/hiện
+    public GameObject selectedFrame;
+    public GameObject selectButtonGameObject;
     
     private CardData cardData;
     private int targetSlotIndex;
@@ -56,9 +56,10 @@ public class CardSelectorUI : MonoBehaviour
         if (selectedFrame != null)
         {
             selectedFrame.SetActive(selected);
-            selectButtonGameObject.SetActive(!selected); // Ẩn nút chọn nếu đã được chọn
+            selectButtonGameObject.SetActive(!selected);
         }
     }
+    
     
     void OnSelectClicked()
     {

@@ -7,7 +7,7 @@ public class CharizardSkillController : SkillController
     [SerializeField] private int maxTargets = 3;
     
     [Header("🎯 Rotation")]
-    [SerializeField] private float rotationSpeed = 10f;
+    [SerializeField] private float charizardRotationSpeed = 10f; // Đổi tên biến này
     
     [Header("🔥 DEBUG")]
     [SerializeField] private bool showDebugLogs = true;
@@ -77,7 +77,7 @@ public class CharizardSkillController : SkillController
             transform.rotation = Quaternion.Slerp(
                 transform.rotation, 
                 targetRotation, 
-                rotationSpeed * Time.deltaTime
+                charizardRotationSpeed * Time.deltaTime // Sử dụng biến đã đổi tên
             );
         }
     }
@@ -146,7 +146,6 @@ public class CharizardSkillController : SkillController
         {
             EnemyHealth targetEnemy = enemies[i];
             
-            // ✅ KIỂM TRA TARGET CÒN SỐNG KHÔNG
             if (targetEnemy == null || !targetEnemy.gameObject.activeInHierarchy)
             {
                 continue;
@@ -154,7 +153,6 @@ public class CharizardSkillController : SkillController
             
             Vector3 enemyPos = targetEnemy.transform.position;
             
-            // Spawn skill
             GameObject skillInstance = Instantiate(
                 CurrentSkillData.skillPrefab,
                 enemyPos,
@@ -163,7 +161,6 @@ public class CharizardSkillController : SkillController
             
             skillInstance.name = $"CharizardSkill_{i+1}_{targetEnemy.name}";
             
-            // Initialize
             ISkill skill = skillInstance.GetComponent<ISkill>();
             if (skill != null)
             {
@@ -181,7 +178,6 @@ public class CharizardSkillController : SkillController
         }
     }
     
-    // ✅ DEBUG VISUALIZATION
     private void OnDrawGizmos()
     {
         if (CurrentSkillData == null) return;

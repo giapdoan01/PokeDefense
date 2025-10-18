@@ -47,7 +47,6 @@ public class DeckManager : MonoBehaviour
             cardSelectorPanel.SetActive(false);
         }
         
-        // Đăng ký sự kiện
         if (PlayerDataManager.Instance != null)
         {
             PlayerDataManager.Instance.OnCardChanged += OnCardChanged;
@@ -55,7 +54,6 @@ public class DeckManager : MonoBehaviour
             PlayerDataManager.Instance.OnPlayerDataLoaded += OnPlayerDataLoaded;
         }
         
-        // Kiểm tra xem CardManager đã sẵn sàng chưa
         if (CardManager.Instance != null)
         {
             Debug.Log("CardManager is ready");
@@ -65,7 +63,6 @@ public class DeckManager : MonoBehaviour
             Debug.LogWarning("CardManager is not ready yet!");
         }
         
-        // Refresh ngay sau khi start
         if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.currentPlayerData != null)
         {
             RefreshAllSlots();
@@ -86,14 +83,12 @@ public class DeckManager : MonoBehaviour
     
     void InitializeDeckSlots()
     {
-        // Xóa slots cũ
         foreach (Transform child in deckSlotsContainer)
         {
             Destroy(child.gameObject);
         }
         deckSlots.Clear();
         
-        // Tạo 4 slots
         for (int i = 0; i < maxDeckSize; i++)
         {
             GameObject slotObj = Instantiate(deckSlotPrefab, deckSlotsContainer);
@@ -106,17 +101,15 @@ public class DeckManager : MonoBehaviour
             }
         }
         
-        Debug.Log($"✅ Created {deckSlots.Count} deck slots");
+        Debug.Log($"Created {deckSlots.Count} deck slots");
     }
     
     public void OpenCardSelector(int slotIndex)
     {
         currentEditingSlot = slotIndex;
 
-        // Ẩn frame của tất cả các slots
         HideAllSelectionFrames();
         
-        // Hiển thị frame của slot đang được chọn
         if (slotIndex >= 0 && slotIndex < deckSlots.Count)
         {
             deckSlots[slotIndex].ShowSelectionFrame();
@@ -139,7 +132,6 @@ public class DeckManager : MonoBehaviour
             cardSelectorPanel.SetActive(false);
         }
         
-        // Ẩn frame của tất cả các slots khi đóng selector
         HideAllSelectionFrames();
         
         currentEditingSlot = -1;
@@ -147,7 +139,6 @@ public class DeckManager : MonoBehaviour
         Debug.Log($"Closed card selector");
     }
     
-    // Phương thức mới để ẩn tất cả các frame
     private void HideAllSelectionFrames()
     {
         foreach (DeckSlotUI slot in deckSlots)
@@ -164,14 +155,12 @@ public class DeckManager : MonoBehaviour
             return;
         }
         
-        // Xóa items cũ
         foreach (Transform child in cardSelectorContainer)
         {
             Destroy(child.gameObject);
         }
         cardSelectorItems.Clear();
         
-        // Lấy danh sách thẻ sở hữu
         var ownedCardIds = PlayerDataManager.Instance.currentPlayerData.ownedCardIds;
         
         if (ownedCardIds == null || ownedCardIds.Count == 0)
@@ -180,7 +169,6 @@ public class DeckManager : MonoBehaviour
             return;
         }
         
-        // Tạo UI cho từng thẻ
         foreach (string cardId in ownedCardIds)
         {
             CardData card = CardManager.Instance.GetCardById(cardId);
@@ -215,27 +203,22 @@ public class DeckManager : MonoBehaviour
         
         var cardDeck = PlayerDataManager.Instance.currentPlayerData.cardDeck;
         
-        // Đảm bảo cardDeck không null
         if (cardDeck == null)
         {
             cardDeck = new List<string>();
             PlayerDataManager.Instance.currentPlayerData.cardDeck = cardDeck;
         }
         
-        // Đảm bảo cardDeck có đủ slot
         while (cardDeck.Count < maxDeckSize)
         {
             cardDeck.Add(null);
         }
         
-        // Gán thẻ vào slot
         cardDeck[slotIndex] = cardId;
         
-        // Lưu data
         PlayerDataManager.Instance.currentPlayerData.cardDeck = cardDeck;
         SaveDeck();
         
-        // Refresh UI
         RefreshAllSlots();
         RefreshCardSelector();
         
@@ -246,7 +229,6 @@ public class DeckManager : MonoBehaviour
     {
         if (PlayerDataManager.Instance != null)
         {
-            // Gọi hàm SaveData trực tiếp
             PlayerDataManager.Instance.SavePlayerData();
         }
     }
@@ -255,7 +237,6 @@ public class DeckManager : MonoBehaviour
     {
         Debug.Log("Refreshing all deck slots");
         
-        // Kiểm tra và log thông tin deck hiện tại
         if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.currentPlayerData != null)
         {
             var deck = PlayerDataManager.Instance.currentPlayerData.cardDeck;
@@ -306,7 +287,6 @@ public class DeckManager : MonoBehaviour
         {
             var deck = PlayerDataManager.Instance.currentPlayerData.cardDeck;
             
-            // Đảm bảo deck không null
             if (deck == null)
             {
                 deck = new List<string>();

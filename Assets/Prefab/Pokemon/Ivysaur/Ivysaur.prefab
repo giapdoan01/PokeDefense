@@ -671,6 +671,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillLevels:
   - {fileID: 11400000, guid: 68648e6d82093e346a8a8f4289f55fb9, type: 2}
+  - {fileID: 11400000, guid: 617682fc8da94314e96016002e688be7, type: 2}
+  - {fileID: 11400000, guid: 22f417459f41f8449b88a3fca4f4f7b5, type: 2}
+  - {fileID: 11400000, guid: d0a7ee7e508c72843b6d62cf516550ee, type: 2}
+  - {fileID: 11400000, guid: 16c23e4a8a6ee1d4babb68978100492f, type: 2}
   currentSkillLevel: 0
   rotationSpeed: 10
   prioritizeByWaypoint: 1

@@ -10,7 +10,7 @@ public class SkillController : MonoBehaviour
     [Header("Skill Settings")]
     [SerializeField] private float rotationSpeed = 10f;
     
-    [Header("🎯 Target Priority")]
+    [Header("Target Priority")]
     [SerializeField] private bool prioritizeByWaypoint = true; // Toggle giữa 2 chế độ
     
     [Header("DEBUG")]
@@ -37,20 +37,31 @@ public class SkillController : MonoBehaviour
         
         if (skillLevels == null || skillLevels.Count == 0)
         {
-            Debug.LogError("❌ No skill levels assigned!");
+            Debug.LogError("No skill levels assigned!");
             enabled = false;
             return;
         }
         
         if (CurrentSkillData == null || CurrentSkillData.skillPrefab == null)
         {
-            Debug.LogError("❌ Current skill data or prefab is null!");
+            Debug.LogError("Current skill data or prefab is null!");
             enabled = false;
             return;
         }
         
         EnableSkill();
-        DebugLog($"✅ SkillController initialized - Level {CurrentLevel}/{MaxLevel}");
+        DebugLog($"SkillController initialized - Level {CurrentLevel}/{MaxLevel}");
+    }
+
+
+    public int GetNextLevelCost()
+    {
+        if (!CanUpgrade || currentSkillLevel + 1 >= skillLevels.Count)
+        {
+            return 0;
+        }
+        
+        return skillLevels[currentSkillLevel + 1].coinPriceUpgrade;
     }
 
     private void Update()
@@ -68,7 +79,7 @@ public class SkillController : MonoBehaviour
         {
             if (!currentTarget.gameObject.activeInHierarchy)
             {
-                DebugLog($"❌ Target {currentTarget.name} destroyed");
+                DebugLog($"Target {currentTarget.name} destroyed");
                 currentTarget = null;
                 SetIdleAnimation();
             }
@@ -77,14 +88,13 @@ public class SkillController : MonoBehaviour
                 float distToTarget = Vector3.Distance(transform.position, currentTarget.transform.position);
                 if (distToTarget > CurrentSkillData.baseRange)
                 {
-                    DebugLog($"❌ Target {currentTarget.name} out of range ({distToTarget:F1}m > {CurrentSkillData.baseRange}m)");
+                    DebugLog($"Target {currentTarget.name} out of range ({distToTarget:F1}m > {CurrentSkillData.baseRange}m)");
                     currentTarget = null;
                     SetIdleAnimation();
                 }
             }
         }
         
-        // Find new target
         if (currentTarget == null)
         {
             currentTarget = FindNearestEnemy();
@@ -95,10 +105,8 @@ public class SkillController : MonoBehaviour
             }
         }
         
-        // Attack target
         if (currentTarget != null)
         {
-            // Rotate to target
             Vector3 direction = currentTarget.transform.position - transform.position;
             direction.y = 0;
             
@@ -127,7 +135,7 @@ public class SkillController : MonoBehaviour
     {
         if (!CanUpgrade)
         {
-            Debug.LogWarning("⚠️ Already at max level!");
+            Debug.LogWarning("Already at max level!");
             return;
         }
         
@@ -135,7 +143,7 @@ public class SkillController : MonoBehaviour
         currentSkillLevel++;
         cooldownTimer = 0f;
         
-        DebugLog($"⬆️ Skill upgraded: Level {oldLevel + 1} → {CurrentLevel}");
+        DebugLog($"⬆Skill upgraded: Level {oldLevel + 1} → {CurrentLevel}");
     }
 
     public void CastSkillEvent()
@@ -167,11 +175,11 @@ public class SkillController : MonoBehaviour
                 pokemonAnimator
             );
             
-            DebugLog($"🌊 Skill spawned: {newSkill.name} → Target: {currentTarget.name}");
+            DebugLog($"Skill spawned: {newSkill.name} → Target: {currentTarget.name}");
         }
         else
         {
-            Debug.LogError("❌ NO ISkill COMPONENT!");
+            Debug.LogError("NO ISkill COMPONENT!");
             Destroy(newSkill);
             return;
         }
@@ -179,7 +187,6 @@ public class SkillController : MonoBehaviour
         cooldownTimer = CurrentSkillData.baseCooldown;
     }
 
-    // ✅ LOGIC TÌM TARGET MỚI (DỰA VÀO WAYPOINT)
     private EnemyHealth FindNearestEnemy()
     {
         if (CurrentSkillData == null) return null;
@@ -189,7 +196,6 @@ public class SkillController : MonoBehaviour
         
         if (prioritizeByWaypoint)
         {
-            // ✅ CHỌN ENEMY GẦN CỬA NHẤT (DỰA VÀO WAYPOINT INDEX)
             int highestWaypointIndex = -1;
             float highestProgress = -1f;
             float closestDistAtSameProgress = float.MaxValue;
@@ -220,7 +226,7 @@ public class SkillController : MonoBehaviour
                     closestDistAtSameProgress = distToPlayer;
                     bestTarget = health;
                     
-                    DebugLog($"🎯 New priority target: {enemy.name} (WP {waypointIndex}, Progress {progress:F1}%)");
+                    DebugLog($"New priority target: {enemy.name} (WP {waypointIndex}, Progress {progress:F1}%)");
                 }
                 // Nếu cùng progress, chọn enemy gần pokemon hơn
                 else if (waypointIndex == highestWaypointIndex && 
@@ -230,16 +236,15 @@ public class SkillController : MonoBehaviour
                     closestDistAtSameProgress = distToPlayer;
                     bestTarget = health;
                     
-                    DebugLog($"🎯 Closer target at same progress: {enemy.name} (Dist {distToPlayer:F1}m)");
+                    DebugLog($"Closer target at same progress: {enemy.name} (Dist {distToPlayer:F1}m)");
                 }
             }
         }
         else
         {
-            // ❌ CHỌN ENEMY GẦN PE NHẤT (LOGIC CŨ)
             if (portalEnd == null)
             {
-                Debug.LogWarning("⚠️ Portal End not found! Using waypoint mode instead.");
+                Debug.LogWarning("Portal End not found! Using waypoint mode instead.");
                 prioritizeByWaypoint = true;
                 return FindNearestEnemy();
             }
@@ -279,14 +284,14 @@ public class SkillController : MonoBehaviour
     public void EnableSkill()
     {
         canCastSkill = true;
-        DebugLog("✅ Skill enabled");
+        DebugLog("Skill enabled");
     }
 
     public void DisableSkill()
     {
         canCastSkill = false;
         SetIdleAnimation();
-        DebugLog("❌ Skill disabled");
+        DebugLog("Skill disabled");
     }
     
     public void DestroyActiveSkill()
@@ -326,7 +331,6 @@ public class SkillController : MonoBehaviour
             Gizmos.DrawWireSphere(currentTarget.transform.position, 0.5f);
             
             #if UNITY_EDITOR
-            // ✅ HIỂN THỊ WAYPOINT INDEX VÀ PROGRESS
             var controller = currentTarget.GetComponent<EnemyController>();
             if (controller != null)
             {

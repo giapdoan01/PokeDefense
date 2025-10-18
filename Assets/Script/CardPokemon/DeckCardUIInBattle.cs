@@ -18,7 +18,7 @@ public class DeckCardUIInBattle : MonoBehaviour
         // Đảm bảo grayOverlay tồn tại
         if (grayOverlay == null)
         {
-            Debug.LogWarning("⚠️ Chưa gán grayOverlay, thẻ sẽ không hiển thị được trạng thái không đủ tiền");
+            Debug.LogWarning("Chưa gán grayOverlay, thẻ sẽ không hiển thị được trạng thái không đủ tiền");
         }
     }
     
@@ -59,7 +59,7 @@ public class DeckCardUIInBattle : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"⚠️ CardImage or CardSprite is null for card: {card.name}");
+            Debug.LogWarning($"CardImage or CardSprite is null for card: {card.name}");
         }
         
         // Hiển thị chi phí coin (nếu có)
@@ -82,7 +82,7 @@ public class DeckCardUIInBattle : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"⚠️ pokemonPrefab is null for card: {card.name}");
+            Debug.LogWarning($"pokemonPrefab is null for card: {card.name}");
         }
         
         if (card.pokemonGhostPrefab != null)
@@ -91,7 +91,7 @@ public class DeckCardUIInBattle : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"⚠️ pokemonGhostPrefab is null for card: {card.name}");
+            Debug.LogWarning($"pokemonGhostPrefab is null for card: {card.name}");
         }
         
         // QUAN TRỌNG: Gán CardData cho DragDropPokemon
@@ -100,7 +100,7 @@ public class DeckCardUIInBattle : MonoBehaviour
         // Kiểm tra ngay lập tức xem có đủ tiền không
         UpdateCardAvailability();
         
-        Debug.Log($"✅ Setup DeckCardUI for: {card.name}");
+        Debug.Log($"Setup DeckCardUI for: {card.name}");
     }
     
     public CardData GetCardData()

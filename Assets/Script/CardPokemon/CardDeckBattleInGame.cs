@@ -23,48 +23,46 @@ public class CardDeckBattleInGame : MonoBehaviour
             Destroy(gameObject);
         }
     }
-    
+
     void Start()
     {
         LoadDeckFromPlayerData();
     }
-    
-    /// <summary>
-    /// Load Deck từ PlayerData và tạo UI
-    /// </summary>
+
+    // Load deck từ PlayerData và tạo UI
     void LoadDeckFromPlayerData()
     {
         if (PlayerDataManager.Instance == null || PlayerDataManager.Instance.currentPlayerData == null)
         {
-            Debug.LogError("❌ PlayerDataManager not found!");
+            Debug.LogError("PlayerDataManager not found!");
             return;
         }
-        
+
         if (CardManager.Instance == null)
         {
-            Debug.LogError("❌ CardManager not found!");
+            Debug.LogError("CardManager not found!");
             return;
         }
-        
+
         // Lấy cardDeck từ PlayerData
         List<string> cardDeck = PlayerDataManager.Instance.currentPlayerData.cardDeck;
-        
+
         if (cardDeck == null || cardDeck.Count == 0)
         {
-            Debug.LogWarning("⚠️ Deck is empty!");
+            Debug.LogWarning("Deck is empty!");
             return;
         }
-        
+
         // Clear old UI
         ClearDeckUI();
-        
+
         // Tạo UI cho từng card trong deck
         foreach (string cardId in cardDeck)
         {
             if (string.IsNullOrEmpty(cardId)) continue;
-            
+
             CardData card = CardManager.Instance.GetCardById(cardId);
-            
+
             if (card != null)
             {
                 currentBattleDeck.Add(card);
@@ -72,21 +70,18 @@ public class CardDeckBattleInGame : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"⚠️ Card not found: {cardId}");
+                Debug.LogWarning($"Card not found: {cardId}");
             }
         }
-        
-        Debug.Log($"✅ Loaded {currentBattleDeck.Count} cards into battle deck");
+
+        Debug.Log($"Loaded {currentBattleDeck.Count} cards into battle deck");
     }
-    
-    /// <summary>
-    /// Tạo UI cho 1 card trong deck
-    /// </summary>
+    // Tạo UI cho một card và thêm vào container
     void CreateDeckCardUI(CardData card)
     {
         if (deckCardUIPrefab == null || deckUIContainer == null)
         {
-            Debug.LogError("❌ Deck UI Prefab or Container is null!");
+            Debug.LogError("Deck UI Prefab or Container is null!");
             return;
         }
         
@@ -100,13 +95,10 @@ public class CardDeckBattleInGame : MonoBehaviour
         }
         else
         {
-            Debug.LogError("❌ DeckCardUI component not found on prefab!");
+            Debug.LogError("DeckCardUI component not found on prefab!");
         }
     }
-    
-    /// <summary>
-    /// Xóa toàn bộ UI deck cũ
-    /// </summary>
+    // Xoá tất cả UI card trong deck
     void ClearDeckUI()
     {
         foreach (Transform child in deckUIContainer)
@@ -118,17 +110,11 @@ public class CardDeckBattleInGame : MonoBehaviour
         currentBattleDeck.Clear();
     }
     
-    /// <summary>
-    /// Lấy danh sách CardData trong deck hiện tại
-    /// </summary>
     public List<CardData> GetCurrentBattleDeck()
     {
         return currentBattleDeck;
     }
     
-    /// <summary>
-    /// Refresh deck (gọi khi có thay đổi)
-    /// </summary>
     public void RefreshDeck()
     {
         LoadDeckFromPlayerData();

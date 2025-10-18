@@ -10,11 +10,13 @@ public class MapButton : MonoBehaviour
     
     [Header("UI References")]
     public TMP_Text mapText;
-    
+
     public Image mapIcon;
+    public Image MakeUpIcon;
     
     [Header("Visual Settings")]
     public Color hoverColor = new Color(0.8f, 0.8f, 1f);
+    public Color lockedColor = new Color(0.5f, 0.5f, 0.5f, 0.5f); // Màu khi map bị khóa
     
     private Button button;
     private Image buttonImage;
@@ -30,10 +32,14 @@ public class MapButton : MonoBehaviour
     {
         button = GetComponent<Button>();
         buttonImage = GetComponent<Image>();
-        
+
         if (buttonImage != null)
         {
             originalColor = buttonImage.color;
+        }
+        if(MakeUpIcon != null)
+        {
+            MakeUpIcon.color = originalColor;
         }
         
         if (button != null)
@@ -50,7 +56,12 @@ public class MapButton : MonoBehaviour
     {
         if (mapText != null)
         {
-            mapText.text = $"Map {mapIndex}";
+            bool isUnlocked = PlayerDataManager.Instance != null && 
+                             PlayerDataManager.Instance.IsMapUnlocked(mapIndex);
+                             
+            mapText.text = isUnlocked 
+                ? $"{mapIndex}" 
+                : $"{mapIndex}";
         }
     }
 
@@ -59,6 +70,8 @@ public class MapButton : MonoBehaviour
         if (MapManager.Instance != null)
         {
             MapData mapData = MapManager.Instance.GetMapByIndex(mapIndex);
+            bool isUnlocked = PlayerDataManager.Instance != null && 
+                             PlayerDataManager.Instance.IsMapUnlocked(mapIndex);
             
             if (mapData == null)
             {
@@ -71,7 +84,7 @@ public class MapButton : MonoBehaviour
                 
                 if (mapText != null)
                 {
-                    mapText.text = $"Map {mapIndex}\n(Locked)";
+                    mapText.text = $"Map {mapIndex}\n(Unavailable)";
                 }
             }
             else if (mapData.mapPrefab == null)
@@ -83,12 +96,36 @@ public class MapButton : MonoBehaviour
                     button.interactable = false;
                 }
             }
+            else if (!isUnlocked)
+            {
+                // Map chưa được mở khóa
+                if (button != null)
+                {
+                    button.interactable = false;
+                }
+
+                if (buttonImage != null)
+                {
+                    buttonImage.color = lockedColor;
+                }
+                if(MakeUpIcon != null)
+                {
+                    MakeUpIcon.color = lockedColor;
+                }
+            }
         }
     }
 
     void OnButtonClick()
     {
-        Debug.Log($"Map {mapIndex} button clicked!");
+        bool isUnlocked = PlayerDataManager.Instance != null && 
+                         PlayerDataManager.Instance.IsMapUnlocked(mapIndex);
+                         
+        if (!isUnlocked)
+        {
+            Debug.LogWarning($"Map {mapIndex} chưa được mở khóa!");
+            return;
+        }
         
         if (GameSceneManager.Instance == null)
         {
@@ -109,7 +146,7 @@ public class MapButton : MonoBehaviour
 
     public void OnPointerExit()
     {
-        if (buttonImage != null)
+        if (buttonImage != null && button != null && button.interactable)
         {
             buttonImage.color = originalColor;
         }

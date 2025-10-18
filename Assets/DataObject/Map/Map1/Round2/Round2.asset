@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a098f450563d6a24f9496ab2a11496c3, type: 3}
+  m_Name: Round2
+  m_EditorClassIdentifier: 
+  waves:
+  - {fileID: 11400000, guid: 9a7f5f8575c9bea41b2a12469ee83eff, type: 2}
+  - {fileID: 11400000, guid: 6716a6c4db2f53443a24d9d82129d3fd, type: 2}
+  - {fileID: 11400000, guid: b04b3859ac85a484dbe5ed5435edfd33, type: 2}
+  - {fileID: 11400000, guid: 1d1ec3d979961bc4d9a31ad85147a17a, type: 2}
+  - {fileID: 11400000, guid: 8a03159ce58eabf4690a5a3ba8912a6b, type: 2}
+  coinRound: 180

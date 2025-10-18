@@ -557,6 +557,8 @@ GameObject:
   - component: {fileID: 5893436742269998250}
   - component: {fileID: 480117778270884546}
   - component: {fileID: 4931893459658755736}
+  - component: {fileID: 3356909566317638239}
+  - component: {fileID: -7380463008766418268}
   m_Layer: 6
   m_Name: Blastoise
   m_TagString: Pokemon
@@ -667,9 +669,40 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillLevels:
   - {fileID: 11400000, guid: 4a6a4dbc0125cd348b3d7cb85bf87bad, type: 2}
+  - {fileID: 11400000, guid: 984c02608ce7516438ad0cba52039d61, type: 2}
+  - {fileID: 11400000, guid: cf13702eb3c186b4ba84a7f3710ce50e, type: 2}
+  - {fileID: 11400000, guid: b45c024ae1077454a83910478b8c408b, type: 2}
+  - {fileID: 11400000, guid: 71f49d55b396651489a1d0c5d4d659b2, type: 2}
   currentSkillLevel: 0
   rotationSpeed: 10
+  prioritizeByWaypoint: 1
   enableDebugLogs: 1
+--- !u!114 &3356909566317638239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7322645439873511005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c07a18b95e9c5d6479e2c42b32eb9861, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-7380463008766418268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7322645439873511005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e9a3194a6481564394dafa9218f8025, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pokemonData: {fileID: 11400000, guid: 64ed3336ce404354baf42c16411ba71b, type: 2}
+  currentSlot: {fileID: 0}
 --- !u!1 &7631459931866748301
 GameObject:
   m_ObjectHideFlags: 0

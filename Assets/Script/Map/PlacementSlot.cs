@@ -14,7 +14,6 @@ public class PlacementSlot : MonoBehaviour
         Vector3 pos = placePoint ? placePoint.position : transform.position;
         GameObject pokemon = Instantiate(pokemonPrefab, pos, Quaternion.identity);
 
-        // Gán slot vào PokemonUpgrade
         PokemonEvolution upgrade = pokemon.GetComponent<PokemonEvolution>();
         if (upgrade != null)
             upgrade.currentSlot = this;

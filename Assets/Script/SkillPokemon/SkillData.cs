@@ -10,4 +10,7 @@ public class SkillData : ScriptableObject
     public float baseDamage = 10f;
     public float baseCooldown = 1f;
     public float baseRange = 5f;
+    
+    [Header("Upgrade Cost")]
+    public int coinPriceUpgrade = 50; // Số tiền cần để nâng cấp lên level này
 }

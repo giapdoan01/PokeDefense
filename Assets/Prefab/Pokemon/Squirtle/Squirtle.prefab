@@ -298,8 +298,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillLevels:
   - {fileID: 11400000, guid: c5fd442293fc459439203823cfe36a85, type: 2}
+  - {fileID: 11400000, guid: bdb4712a9ce85b34a8e8ad8a5a23dbe0, type: 2}
+  - {fileID: 11400000, guid: 676ae5ab02220f84e948565cc69ec93b, type: 2}
+  - {fileID: 11400000, guid: dab05816861788e4aadaf65e17f5dd59, type: 2}
+  - {fileID: 11400000, guid: cffc650c92c89e94db03cee40505325f, type: 2}
   currentSkillLevel: 0
   rotationSpeed: 10
+  prioritizeByWaypoint: 1
   enableDebugLogs: 1
 --- !u!114 &3395385322578091091
 MonoBehaviour:

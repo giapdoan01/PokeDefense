@@ -3,17 +3,43 @@ using UnityEngine.UI;
 
 public class EnemyHealth : MonoBehaviour
 {
-    public float baseHealth = 100;
-    public float currentHealth;
+    [SerializeField] private EnemyStats stats;
+    
+    private float currentHealth;
     private int roundMultiplier = 1;
-    private bool isDead = false; // Thêm biến cờ để kiểm tra đã chết chưa
+    private bool isDead = false;
 
     [SerializeField] private Slider healthBar;
 
+    public void SetStats(EnemyStats newStats)
+    {
+        stats = newStats;
+        UpdateHealthFromStats();
+
+        EnemyController controller = GetComponent<EnemyController>();
+        if (controller != null)
+        {
+            controller.UpdateFromStats(stats);
+        }
+    }
+
     private void OnEnable()
     {
-        isDead = false; // Reset biến cờ khi quái được tái kích hoạt từ pool
-        currentHealth = Mathf.RoundToInt(baseHealth * roundMultiplier);
+        isDead = false;
+        UpdateHealthFromStats();
+    }
+
+    private void UpdateHealthFromStats()
+    {
+        if (stats != null)
+        {
+            currentHealth = Mathf.RoundToInt(stats.enemyHealth * roundMultiplier);
+        }
+        else
+        {
+            currentHealth = 100 * roundMultiplier;
+        }
+        
         if (healthBar != null)
         {
             healthBar.maxValue = currentHealth;
@@ -24,11 +50,11 @@ public class EnemyHealth : MonoBehaviour
     public void ApplyRoundMultiplier(int multiplier)
     {
         roundMultiplier = multiplier;
+        UpdateHealthFromStats();
     }
 
     public void TakeDamage(float dmg)
     {
-        // Nếu quái đã chết rồi, không xử lý damage nữa
         if (isDead) return;
         
         currentHealth -= dmg;
@@ -36,18 +62,19 @@ public class EnemyHealth : MonoBehaviour
 
         if (currentHealth <= 0 && !isDead)
         {
-            isDead = true; // Đánh dấu đã chết trước khi gọi Die()
+            isDead = true;
             Die();
         }
     }
 
     private void Die()
     {
-        Debug.Log($"Enemy {gameObject.name} died, adding 10 money");
-        // Cộng tiền cho player
-        PlayerStats.Instance.AddCoin(10);
+        int moneyReward = (stats != null) ? stats.enemyMoney : 10;
+        
+        PlayerStats.Instance.AddCoin(moneyReward);
 
-        // Trả về pool
         gameObject.SetActive(false);
     }
+    
+    public EnemyStats Stats => stats;
 }

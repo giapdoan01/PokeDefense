@@ -5,8 +5,6 @@ public class GameSceneManager : MonoBehaviour
 {
     // Singleton
     public static GameSceneManager Instance { get; private set; }
-    private string menuSceneName = "MapRoadScene";
-    private string inGameSceneName = "InGamePlay";
     private int selectedMapIndex = 1;
     
     void Awake()
@@ -30,19 +28,17 @@ public class GameSceneManager : MonoBehaviour
         
         Debug.Log($"Loading InGame scene with Map {mapIndex}...");
         
-        SceneManager.LoadScene(inGameSceneName);
+        SceneManager.LoadScene("InGamePlay");
         
         SceneManager.sceneLoaded += OnInGameSceneLoaded;
     }
 
     void OnInGameSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name == inGameSceneName)
+        if (scene.name == "InGamePlay")
         {
-            // Unsubscribe để tránh gọi nhiều lần
             SceneManager.sceneLoaded -= OnInGameSceneLoaded;
             
-            // Spawn map đã chọn
             SpawnSelectedMap();
         }
     }
@@ -69,7 +65,7 @@ public class GameSceneManager : MonoBehaviour
             MapManager.Instance.DestroyCurrentMap();
         }
         
-        SceneManager.LoadScene(menuSceneName);
+        SceneManager.LoadScene("MapRoadScene");
     }
 
     public void RestartMap()
@@ -127,6 +123,6 @@ public class GameSceneManager : MonoBehaviour
 
     public bool IsInGameScene()
     {
-        return GetCurrentSceneName() == inGameSceneName;
+        return GetCurrentSceneName() == "InGamePlay";
     }
 }

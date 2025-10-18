@@ -15,4 +15,4 @@ MonoBehaviour:
   pokemonName: Venusaur
   type: Grass
   prefab: {fileID: 368245013608263086, guid: a78805d06b08bf448bed56a27b7e5dee, type: 3}
-  nextEvolution: {fileID: 11400000}
+  nextEvolution: {fileID: 0}

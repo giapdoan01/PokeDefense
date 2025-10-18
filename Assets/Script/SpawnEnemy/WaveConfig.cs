@@ -4,5 +4,9 @@ using System.Collections.Generic;
 [CreateAssetMenu(fileName = "WaveConfig", menuName = "Game/New Wave")]
 public class WaveConfig : ScriptableObject
 {
-    public List<SpawnEntry> enemies; // Danh sách loại quái trong wave
+    [Tooltip("Danh sách kẻ địch trong wave này")]
+    public List<EnemyStats> enemies = new List<EnemyStats>();
+    
+    [Tooltip("Thời gian chờ trước khi bắt đầu wave tiếp theo (giây)")]
+    public float waveDelay = 5f;
 }

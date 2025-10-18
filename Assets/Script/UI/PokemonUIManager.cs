@@ -20,9 +20,11 @@ public class PokemonUIManager : MonoBehaviour
     
     [Header("Buttons")]
     [SerializeField] private Button upgradeButton;
-    [SerializeField] private Button evolutionButton; // ✅ NÚT EVOLUTION MỚI
+    [SerializeField] private Button evolutionButton;
     [SerializeField] private Button removeButton;
     [SerializeField] private TextMeshProUGUI upgradeButtonText;
+    [SerializeField] private TextMeshProUGUI coinUpgradeText;
+    [SerializeField] private Button offPanelButton;
     
     [Header("Debug Options")]
     [SerializeField] private bool showEvolutionDebugLogs = true;
@@ -41,15 +43,17 @@ public class PokemonUIManager : MonoBehaviour
         if (upgradeButton != null)
             upgradeButton.onClick.AddListener(OnUpgradeButton);
         
-        // ✅ THÊM LISTENER CHO NÚT EVOLUTION
         if (evolutionButton != null)
         {
             evolutionButton.onClick.AddListener(OnEvolutionButton);
-            evolutionButton.gameObject.SetActive(false); // Ẩn mặc định
+            evolutionButton.gameObject.SetActive(false); 
         }
-            
+
         if (removeButton != null)
             removeButton.onClick.AddListener(OnRemoveButton);
+        
+        if (offPanelButton != null)
+            offPanelButton.onClick.AddListener(HidePanel);
     }
 
     public void ShowPanel(PokemonEvolution pokemon, Vector3 worldPos)
@@ -121,9 +125,26 @@ public class PokemonUIManager : MonoBehaviour
             cooldownText.text = $"Cooldown: {skillData.baseCooldown} s";
         }
         
-        // ✅ BUTTON LOGIC
         bool canUpgrade = skillController.CanUpgrade;
         bool isMaxLevel = skillController.CurrentLevel >= skillController.MaxLevel;
+        
+        if (coinUpgradeText != null)
+        {
+            if (canUpgrade && skillController.GetNextLevelCost() > 0)
+            {
+                coinUpgradeText.gameObject.SetActive(true);
+                coinUpgradeText.text = $"{skillController.GetNextLevelCost()}";
+                
+                // Kiểm tra xem người chơi có đủ tiền không
+                bool canAfford = PlayerStats.Instance.coin >= skillController.GetNextLevelCost();
+                coinUpgradeText.color = canAfford ? Color.white : Color.red;
+                upgradeButton.interactable = canUpgrade && canAfford;
+            }
+            else
+            {
+                coinUpgradeText.gameObject.SetActive(false);
+            }
+        }
         
         // Debug các điều kiện để hiểu tại sao nút Evolution không hiển thị
         if (showEvolutionDebugLogs && isMaxLevel)
@@ -160,12 +181,12 @@ public class PokemonUIManager : MonoBehaviour
         if (upgradeButton != null)
         {
             upgradeButton.gameObject.SetActive(!isMaxLevel); // Ẩn khi max level
-            upgradeButton.interactable = canUpgrade;
+            // Tính toán xem người chơi có đủ tiền không (đã di chuyển lên phần coinUpgradeText)
         }
             
         if (upgradeButtonText != null)
         {
-            upgradeButtonText.text = canUpgrade ? "UPGRADE" : "MAX LEVEL";
+            upgradeButtonText.text = "UPGRADE";
         }
         
         // ✅ NÚT EVOLUTION
@@ -180,10 +201,33 @@ public class PokemonUIManager : MonoBehaviour
         if (currentPokemon == null) return;
         
         var skillController = currentPokemon.GetComponent<SkillController>();
-        if (skillController != null && skillController.CanUpgrade)
+        if (skillController == null) return;
+        
+        // Kiểm tra xem có thể nâng cấp không và người chơi có đủ tiền không
+        if (skillController.CanUpgrade)
         {
-            skillController.UpgradeSkill();
-            UpdateUI(); // ✅ Refresh UI
+            int upgradeCost = skillController.GetNextLevelCost();
+            
+            // Nếu có chi phí và đủ tiền để nâng cấp
+            if (upgradeCost > 0)
+            {
+                if (PlayerStats.Instance.SpendCoin(upgradeCost))
+                {
+                    skillController.UpgradeSkill();
+                    UpdateUI(); // ✅ Refresh UI
+                }
+                else
+                {
+                    Debug.LogWarning($"⚠️ Not enough coins to upgrade! Need: {upgradeCost}");
+                    // Có thể hiển thị thông báo "Không đủ tiền" ở đây
+                }
+            }
+            else
+            {
+                // Trường hợp nâng cấp miễn phí
+                skillController.UpgradeSkill();
+                UpdateUI(); // ✅ Refresh UI
+            }
         }
     }
 
@@ -202,7 +246,7 @@ public class PokemonUIManager : MonoBehaviour
         {
             Debug.Log($"🔥 Evolution: {currentPokemon.name} → {currentPokemon.Data.nextEvolution.pokemonName}");
             
-            currentPokemon.Upgrade(); // Gọi hàm evolution có sẵn
+            currentPokemon.Upgrade(); // Gọi hàm evolution có sẵn (miễn phí)
             HidePanel(); // Đóng UI sau khi evolution
         }
         else

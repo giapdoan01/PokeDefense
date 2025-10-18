@@ -281,6 +281,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnPoint: {fileID: 7677460256201427650}
+  additionalDelayBetweenEnemies: 0
+  onWaveStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onWaveComplete:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1610101391844632815
 GameObject:
   m_ObjectHideFlags: 0
@@ -403,7 +410,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 546, y: 1388}
+  m_AnchoredPosition: {x: 372, y: 1046}
   m_SizeDelta: {x: 222, y: 107.9}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3335415802064852118
@@ -916,9 +923,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rounds:
   - {fileID: 11400000, guid: 9eea0a784d12b3e49af85e28bb29632b, type: 2}
-  - {fileID: 11400000, guid: 9eea0a784d12b3e49af85e28bb29632b, type: 2}
+  - {fileID: 11400000, guid: 532f5bcdd3dfbbc47af7c4d6c2d317cf, type: 2}
+  - {fileID: 11400000, guid: 4eb7cc3c7d7f41b4fbb75ee0adcb103f, type: 2}
+  - {fileID: 11400000, guid: 2533e6c0f2b31504db053a733b35d3d7, type: 2}
+  - {fileID: 11400000, guid: b3667340d2430a847b7211e4812b25e6, type: 2}
   spawner: {fileID: 4853088043293997750}
-  delayBetweenWaves: 1
+  delayBetweenWaves: 3
   nextRoundButton: {fileID: 7982352843896361652}
 --- !u!1 &4822254195867116437
 GameObject:
@@ -1082,10 +1092,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1080, y: 1920}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3

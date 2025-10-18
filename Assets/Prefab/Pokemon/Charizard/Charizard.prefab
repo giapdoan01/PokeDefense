@@ -316,6 +316,8 @@ GameObject:
   - component: {fileID: 3984122100872970263}
   - component: {fileID: 8139591672757844805}
   - component: {fileID: 6616984825484649078}
+  - component: {fileID: 7162806614988255224}
+  - component: {fileID: -7633501083250316192}
   m_Layer: 6
   m_Name: Charizard
   m_TagString: Pokemon
@@ -426,10 +428,43 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillLevels:
   - {fileID: 11400000, guid: 61d5c436a29b34c4fbc79998dd72d7ad, type: 2}
+  - {fileID: 11400000, guid: 87b76cf4248f558449c24f34159fde0f, type: 2}
+  - {fileID: 11400000, guid: 5c1d68c7b13ca774fa448b1e93ad9e08, type: 2}
+  - {fileID: 11400000, guid: 683920abd99163f45a5fbca074a0a4c6, type: 2}
+  - {fileID: 11400000, guid: 9dc1a3d98592f0e46b47d7c2162c7fcd, type: 2}
   currentSkillLevel: 0
   rotationSpeed: 10
+  prioritizeByWaypoint: 1
   enableDebugLogs: 1
-  maxInstancesPerCast: 5
+  maxTargets: 3
+  rotationSpeed: 10
+  showDebugLogs: 0
+--- !u!114 &7162806614988255224
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1465667539093208727}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c07a18b95e9c5d6479e2c42b32eb9861, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-7633501083250316192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1465667539093208727}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e9a3194a6481564394dafa9218f8025, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pokemonData: {fileID: 11400000, guid: b7cc25eecc7b53d41b34fec5515de7ea, type: 2}
+  currentSlot: {fileID: 0}
 --- !u!1 &1564734443450489684
 GameObject:
   m_ObjectHideFlags: 0

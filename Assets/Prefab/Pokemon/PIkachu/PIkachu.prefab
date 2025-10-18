@@ -923,8 +923,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillLevels:
   - {fileID: 11400000, guid: 23ea10166c7132c4c8f8aa994f39e27a, type: 2}
+  - {fileID: 11400000, guid: b515baf0e603ea84398c04195dc51dbd, type: 2}
+  - {fileID: 11400000, guid: dcbd09a8b044fc346a218f886139978f, type: 2}
+  - {fileID: 11400000, guid: e55d6d6c562667640a020ff3b900d49a, type: 2}
+  - {fileID: 11400000, guid: f8ab5da92564c2d44b5beb9bf49ea0d6, type: 2}
+  - {fileID: 11400000, guid: 85593a971eb5c9847b219da13a09d9ee, type: 2}
+  - {fileID: 11400000, guid: 3845d8a5fb3f10942a9f7884150da3d0, type: 2}
+  - {fileID: 11400000, guid: 4959edbcb845aa74b85528a5553e3ed4, type: 2}
+  - {fileID: 11400000, guid: 97f7afb7534422d47a66b250f561f63c, type: 2}
+  - {fileID: 11400000, guid: 07f142942a68c8849b999ee4499424d5, type: 2}
   currentSkillLevel: 0
   rotationSpeed: 10
+  prioritizeByWaypoint: 1
+  enableDebugLogs: 1
 --- !u!1 &4793272482788380660
 GameObject:
   m_ObjectHideFlags: 0

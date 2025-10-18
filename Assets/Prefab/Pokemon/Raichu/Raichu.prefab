@@ -606,6 +606,8 @@ GameObject:
   - component: {fileID: 5200142407930703910}
   - component: {fileID: 6658608176428203325}
   - component: {fileID: 1358482074422061058}
+  - component: {fileID: 1307611164483224201}
+  - component: {fileID: -7445179414555440135}
   m_Layer: 6
   m_Name: Raichu
   m_TagString: Pokemon
@@ -713,8 +715,40 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillLevels:
   - {fileID: 11400000, guid: 9764be779ea7d1e48adeca743985f724, type: 2}
+  - {fileID: 11400000, guid: 6e0878f5c948a9140b7eef12b4b1b7f0, type: 2}
+  - {fileID: 11400000, guid: 48800e307b451e64482e01b3d1e6b6a1, type: 2}
+  - {fileID: 11400000, guid: 21204fc882dd19d42b216db2a8f084b2, type: 2}
+  - {fileID: 11400000, guid: 45013c29989071f43b8425e64d16c6a9, type: 2}
   currentSkillLevel: 0
   rotationSpeed: 10
+  prioritizeByWaypoint: 1
+  enableDebugLogs: 1
+--- !u!114 &1307611164483224201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6027519881476730367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e9a3194a6481564394dafa9218f8025, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pokemonData: {fileID: 11400000, guid: fb3befedd605ba1429e582254e5d9d0a, type: 2}
+  currentSlot: {fileID: 0}
+--- !u!114 &-7445179414555440135
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6027519881476730367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c07a18b95e9c5d6479e2c42b32eb9861, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6281287337333558957
 GameObject:
   m_ObjectHideFlags: 0

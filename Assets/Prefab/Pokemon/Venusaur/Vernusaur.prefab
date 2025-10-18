@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1588922991841847200}
   - component: {fileID: 5473347101128407367}
   - component: {fileID: 1024990050187369285}
+  - component: {fileID: -3371939000569974961}
   m_Layer: 0
   m_Name: Vernusaur
   m_TagString: Untagged
@@ -86,6 +87,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillLevels:
   - {fileID: 11400000, guid: eddb66552180ddc4285e628911574b0f, type: 2}
+  - {fileID: 11400000, guid: 093f7fc2aa884cd4cb69b8dc61bd3635, type: 2}
+  - {fileID: 11400000, guid: 144dd7e5944512a408b188677fabcaba, type: 2}
+  - {fileID: 11400000, guid: 6ee3fb3ddd8e38a43ba97ec5dc035a5e, type: 2}
+  - {fileID: 11400000, guid: f0ed0ee8955c7f64697bc7b2bc7ac741, type: 2}
   currentSkillLevel: 0
   rotationSpeed: 10
   prioritizeByWaypoint: 1
@@ -140,6 +145,20 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 90
   m_CollisionDetection: 0
+--- !u!114 &-3371939000569974961
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 368245013608263086}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e9a3194a6481564394dafa9218f8025, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pokemonData: {fileID: 11400000, guid: 8677fde80071e824486de01450fe7c0f, type: 2}
+  currentSlot: {fileID: 0}
 --- !u!1 &561987353842311128
 GameObject:
   m_ObjectHideFlags: 0

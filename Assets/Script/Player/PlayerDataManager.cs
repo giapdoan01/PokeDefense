@@ -15,9 +15,9 @@ public class PlayerDataManager : MonoBehaviour
 
     public event Action<PlayerData> OnPlayerDataLoaded;
     public event Action<int> OnGemChanged;
-    public event Action<int, int> OnMapUnlocked;
+    public event Action<int> OnMapUnlocked;
     public event Action<string> OnCardChanged;
-    public event Action OnDeckChanged; // Thêm event mới để thông báo khi deck thay đổi
+    public event Action OnDeckChanged;
 
     void Awake()
     {
@@ -52,35 +52,31 @@ public class PlayerDataManager : MonoBehaviour
         if (!string.IsNullOrEmpty(json))
         {
             currentPlayerData = JsonUtility.FromJson<PlayerData>(json);
-            
-            // Kiểm tra và khởi tạo các danh sách nếu cần
+
             if (currentPlayerData.ownedCardIds == null)
                 currentPlayerData.ownedCardIds = new List<string>();
-                
+
             if (currentPlayerData.cardDeck == null)
                 currentPlayerData.cardDeck = new List<string>();
-                
-            // Log thông tin deck để debug
-            Debug.Log($"PlayerData loaded: {currentPlayerData.username}");
-            Debug.Log($"cardDeck count: {currentPlayerData.cardDeck.Count}");
-            for (int i = 0; i < currentPlayerData.cardDeck.Count; i++)
-            {
-                Debug.Log($"Deck card {i}: {currentPlayerData.cardDeck[i]}");
-            }
+
+            if (currentPlayerData.unlockedMapsList == null)
+                currentPlayerData.unlockedMapsList = new List<MapUnlockInfo>();
+
+            if (currentPlayerData.completedMapsList == null)
+                currentPlayerData.completedMapsList = new List<MapCompletionInfo>();
+
+            // Cập nhật Dictionary từ List
+            currentPlayerData.UpdateUnlockedMapsDict();
+            currentPlayerData.UpdateCompletedMapsDict();
 
             OnPlayerDataLoaded?.Invoke(currentPlayerData);
-            OnDeckChanged?.Invoke(); // Kích hoạt event deck thay đổi sau khi load
-        }
-        else
-        {
-            Debug.LogError("❌ Không tìm thấy PlayerData!");
+            OnDeckChanged?.Invoke();
         }
     }
 
     void EnableRealtimeSync(string userId)
     {
         databaseRef.Child("users").Child(userId).ValueChanged += OnDataChanged;
-        Debug.Log($"Realtime sync enabled");
     }
 
     void OnDataChanged(object sender, ValueChangedEventArgs args)
@@ -96,9 +92,8 @@ public class PlayerDataManager : MonoBehaviour
             PlayerData newData = ParsePlayerData(args.Snapshot);
             currentPlayerData = newData;
 
-            Debug.Log($"Realtime update");
             OnPlayerDataLoaded?.Invoke(currentPlayerData);
-            OnDeckChanged?.Invoke(); // Kích hoạt event deck thay đổi sau khi update từ Firebase
+            OnDeckChanged?.Invoke();
         }
     }
 
@@ -106,18 +101,17 @@ public class PlayerDataManager : MonoBehaviour
     {
         if (currentPlayerData == null) return;
 
-        // Đảm bảo cardDeck không null trước khi lưu
         if (currentPlayerData.cardDeck == null)
             currentPlayerData.cardDeck = new List<string>();
-            
-        // Debug trước khi lưu
+
+        currentPlayerData.UpdateUnlockedMapsList();
+        currentPlayerData.UpdateCompletedMapsList();
+
         if (currentPlayerData.ownedCardIds != null)
             Debug.Log($"Saving player data with {currentPlayerData.ownedCardIds.Count} cards");
         else
             Debug.LogError("ownedCardIds is null when trying to save!");
-            
-        // Debug thông tin deck
-        Debug.Log($"Saving deck with {currentPlayerData.cardDeck.Count} cards");
+
         for (int i = 0; i < currentPlayerData.cardDeck.Count; i++)
         {
             Debug.Log($"Saving deck card {i}: {currentPlayerData.cardDeck[i]}");
@@ -125,15 +119,11 @@ public class PlayerDataManager : MonoBehaviour
 
         string json = JsonUtility.ToJson(currentPlayerData);
 
-        // Debug json để kiểm tra
-        Debug.Log($"JSON to save: {json}");
-
         databaseRef.Child("users").Child(currentPlayerData.userId).SetRawJsonValueAsync(json).ContinueWithOnMainThread(task =>
         {
             if (task.IsCompleted)
             {
-                Debug.Log($"Saved data");
-                OnDeckChanged?.Invoke(); // Kích hoạt event sau khi lưu
+                OnDeckChanged?.Invoke();
             }
         });
 
@@ -173,21 +163,7 @@ public class PlayerDataManager : MonoBehaviour
     public void UnlockMap(int mapIndex)
     {
         currentPlayerData.UnlockMap(mapIndex);
-        OnMapUnlocked?.Invoke(mapIndex, 0);
-        SaveData();
-    }
-
-    public void CompleteMap(int mapIndex, int stars)
-    {
-        if (!currentPlayerData.mapProgress.ContainsKey(mapIndex))
-        {
-            currentPlayerData.mapProgress[mapIndex] = new MapProgressData { mapIndex = mapIndex };
-        }
-
-        currentPlayerData.mapProgress[mapIndex].completed = true;
-        currentPlayerData.mapProgress[mapIndex].stars = Mathf.Max(currentPlayerData.mapProgress[mapIndex].stars, stars);
-
-        OnMapUnlocked?.Invoke(mapIndex, stars);
+        OnMapUnlocked?.Invoke(mapIndex);
         SaveData();
     }
 
@@ -195,9 +171,6 @@ public class PlayerDataManager : MonoBehaviour
 
     public void AddCard(string cardId)
     {
-        Debug.Log($"Trying to add card: {cardId}");
-        Debug.Log($"Current owned cards: {(currentPlayerData.ownedCardIds != null ? currentPlayerData.ownedCardIds.Count : 0)}");
-
         // Kiểm tra xem danh sách có null không
         if (currentPlayerData.ownedCardIds == null)
             currentPlayerData.ownedCardIds = new List<string>();
@@ -205,17 +178,16 @@ public class PlayerDataManager : MonoBehaviour
         // Thêm thẻ
         currentPlayerData.AddCard(cardId);
 
-        Debug.Log($"After adding, owned cards count: {currentPlayerData.ownedCardIds.Count}");
         OnCardChanged?.Invoke(cardId);
         SaveData();
     }
 
     // ==================== DECK ====================
-    
+
     public void UpdateDeck(List<string> newDeck)
     {
         if (currentPlayerData == null) return;
-        
+
         currentPlayerData.cardDeck = newDeck;
         OnDeckChanged?.Invoke();
         SaveData();
@@ -237,7 +209,8 @@ public class PlayerDataManager : MonoBehaviour
             userId = snapshot.Child("userId").Value?.ToString() ?? "",
             username = snapshot.Child("username").Value?.ToString() ?? "Player",
             gem = int.Parse(snapshot.Child("gem").Value?.ToString() ?? "0"),
-            mapProgress = new Dictionary<int, MapProgressData>(),
+            unlockedMaps = new Dictionary<int, bool>(),
+            completedMaps = new Dictionary<int, bool>(),
             ownedCardIds = new List<string>(),
             cardDeck = new List<string>()
         };
@@ -265,34 +238,53 @@ public class PlayerDataManager : MonoBehaviour
                 data.cardDeck.Add(cardId); // Kể cả null cũng thêm để giữ đúng index
             }
             Debug.Log($"Loaded {data.cardDeck.Count} deck cards from Firebase");
-            for (int i = 0; i < data.cardDeck.Count; i++) 
+            for (int i = 0; i < data.cardDeck.Count; i++)
             {
                 Debug.Log($"Deck card {i}: {data.cardDeck[i]}");
             }
         }
 
-        // Đọc mapProgress từ Firebase
-        if (snapshot.Child("mapProgress").Exists)
+        // Đọc unlockedMapsList từ Firebase
+        if (snapshot.Child("unlockedMapsList").Exists)
         {
-            foreach (DataSnapshot mapSnapshot in snapshot.Child("mapProgress").Children)
+            foreach (DataSnapshot mapSnapshot in snapshot.Child("unlockedMapsList").Children)
             {
-                if (int.TryParse(mapSnapshot.Key, out int mapIndex))
-                {
-                    MapProgressData mapData = new MapProgressData();
-                    mapData.mapIndex = mapIndex;
-                    mapData.unlocked = mapSnapshot.Child("unlocked").Value != null &&
-                                       (bool)mapSnapshot.Child("unlocked").Value;
-                    mapData.completed = mapSnapshot.Child("completed").Value != null &&
-                                        (bool)mapSnapshot.Child("completed").Value;
-                    mapData.stars = mapSnapshot.Child("stars").Value != null ?
-                                    int.Parse(mapSnapshot.Child("stars").Value.ToString()) : 0;
+                int mapIndex = int.Parse(mapSnapshot.Child("mapIndex").Value?.ToString() ?? "0");
+                bool isUnlocked = bool.Parse(mapSnapshot.Child("isUnlocked").Value?.ToString() ?? "false");
 
-                    data.mapProgress[mapIndex] = mapData;
-                }
+                MapUnlockInfo info = new MapUnlockInfo { mapIndex = mapIndex, isUnlocked = isUnlocked };
+                data.unlockedMapsList.Add(info);
             }
         }
+        data.UpdateUnlockedMapsDict();
+
+        // THÊM MỚI: Đọc completedMapsList từ Firebase
+        if (snapshot.Child("completedMapsList").Exists)
+        {
+            foreach (DataSnapshot mapSnapshot in snapshot.Child("completedMapsList").Children)
+            {
+                int mapIndex = int.Parse(mapSnapshot.Child("mapIndex").Value?.ToString() ?? "0");
+                bool isCompleted = bool.Parse(mapSnapshot.Child("isCompleted").Value?.ToString() ?? "false");
+
+                MapCompletionInfo info = new MapCompletionInfo { mapIndex = mapIndex, isCompleted = isCompleted };
+                data.completedMapsList.Add(info);
+            }
+        }
+        data.UpdateCompletedMapsDict();
 
         return data;
+    }
+    // THÊM MỚI: Phương thức để đánh dấu map đã hoàn thành
+    public void MarkMapCompleted(int mapIndex)
+    {
+        currentPlayerData.MarkMapCompleted(mapIndex);
+        SaveData();
+    }
+
+    // THÊM MỚI: Phương thức để kiểm tra map đã hoàn thành chưa
+    public bool IsMapCompleted(int mapIndex)
+    {
+        return currentPlayerData?.IsMapCompleted(mapIndex) ?? false;
     }
 
     void OnDestroy()

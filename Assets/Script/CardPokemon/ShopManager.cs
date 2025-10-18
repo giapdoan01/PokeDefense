@@ -11,16 +11,34 @@ public class ShopManager : MonoBehaviour
     public GameObject shopItemPrefab;
     public TMP_Text totalCardsText;
     public Button ReturnHomeButton;
+    public TMP_Text GemText;
 
     void Start()
     {
-        // Load cards
         ShowAllCards();
-        // Return home
         if (ReturnHomeButton != null)
             ReturnHomeButton.onClick.AddListener(OnReturnHomeClicked);
-    
-        
+
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerDataManager.Instance.OnPlayerDataLoaded += UpdateUI;
+            PlayerDataManager.Instance.OnGemChanged += UpdateGem;
+
+            if (PlayerDataManager.Instance.currentPlayerData != null)
+            {
+                UpdateUI(PlayerDataManager.Instance.currentPlayerData);
+            }
+        }
+    }
+    void UpdateUI(PlayerData data)
+    {
+        if (GemText != null)
+            GemText.text = data.gem.ToString();
+    }
+    void UpdateGem(int gem)
+    {
+        if (GemText != null)
+            GemText.text = gem.ToString();
     }
     
     public void ShowAllCards()
@@ -41,7 +59,6 @@ public class ShopManager : MonoBehaviour
 
     IEnumerator DisplayCardsCoroutine(List<CardData> cards)
     {
-        // Clear old items
         foreach (Transform child in shopContainer)
         {
             Destroy(child.gameObject);
@@ -49,7 +66,6 @@ public class ShopManager : MonoBehaviour
 
         yield return null;
 
-        // Check empty
         if (cards.Count == 0)
         {
             if (totalCardsText != null)
@@ -57,20 +73,16 @@ public class ShopManager : MonoBehaviour
             yield break;
         }
 
-        // Update count
         if (totalCardsText != null)
             totalCardsText.text = $"Tổng: {cards.Count} cards";
 
-        // Instantiate items
         foreach (CardData card in cards)
         {
             GameObject itemObj = Instantiate(shopItemPrefab, shopContainer);
 
-            // Force reset transform
             itemObj.transform.localScale = Vector3.one;
             itemObj.transform.localRotation = Quaternion.identity;
 
-            // Setup UI
             ShopItemUI itemUI = itemObj.GetComponent<ShopItemUI>();
             if (itemUI != null)
             {

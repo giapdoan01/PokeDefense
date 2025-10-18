@@ -21,29 +21,33 @@ public class CardManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
-    
+
     void Start()
     {
         Debug.Log($"CardManager initialized with {allCards.Count} cards");
     }
-    
+
+    //Hàm lấy tất cả Card
     public List<CardData> GetAllCards()
     {
         return new List<CardData>(allCards);
     }
 
+    //Hàm lấy Card theo ID 
     public CardData GetCardById(string cardId)
     {
         return allCards.FirstOrDefault(card => card.id == cardId);
     }
-    
+
+    //Hàm lấy 1 loạt thẻ theo Type (Hệ Pokemon)
     public List<CardData> GetCardsByType(string type)
     {
-        return allCards.Where(card => 
+        return allCards.Where(card =>
             card.type.Equals(type, System.StringComparison.OrdinalIgnoreCase)
         ).ToList();
     }
     
+    //Hàm lọc 1 nhóm thẻ theo khoảng giá
     public List<CardData> GetCardsByPriceRange(int minPrice, int maxPrice)
     {
         return allCards.Where(card => 
@@ -64,7 +68,7 @@ public class CardManager : MonoBehaviour
     {
         if (allCards.Any(card => card.id == newCard.id))
         {
-            Debug.LogWarning($"⚠️ Card ID {newCard.id} đã tồn tại!");
+            Debug.LogWarning($"Card ID {newCard.id} đã tồn tại!");
             return false;
         }
         
