@@ -28,6 +28,8 @@ public class FirebaseAuthManager : MonoBehaviour
     [Header("Status (Optional)")]
     public TextMeshProUGUI statusText;
 
+    [Header("LoadingPanel")]
+    public GameObject loadingPanel;
     private FirebaseAuth auth;
     private DatabaseReference databaseRef;
 
@@ -43,6 +45,7 @@ public class FirebaseAuthManager : MonoBehaviour
         // Thiết lập UI ban đầu
         registerPanel.SetActive(false);
         loginPanel.SetActive(true);
+        loadingPanel.SetActive(false);
         
         // Kiểm tra trạng thái Firebase định kỳ
         InvokeRepeating(nameof(CheckFirebaseReady), 0.5f, 0.5f);
@@ -61,7 +64,6 @@ public class FirebaseAuthManager : MonoBehaviour
         }
     }
 
-    // ==================== REGISTER ====================
 
     public void RegisterAccount()
     {
@@ -151,13 +153,10 @@ public class FirebaseAuthManager : MonoBehaviour
         });
     }
 
-    // ==================== LOGIN ====================
-
     public void LoginAccount()
     {
         if (auth == null)
         {
-            ShowStatus("Firebase chưa sẵn sàng. Vui lòng đợi...");
             return;
         }
         
@@ -222,7 +221,7 @@ public class FirebaseAuthManager : MonoBehaviour
                     PlayerPrefs.Save();
 
                     ShowStatus("Đăng nhập thành công!");
-
+                    loadingPanel.SetActive(true);
                     Invoke(nameof(LoadHomePage), 1f);
                 }
                 else
@@ -303,8 +302,6 @@ public class FirebaseAuthManager : MonoBehaviour
         return data;
     }
 
-    // ==================== NAVIGATION ====================
-
     public void GoToRegisterPanel()
     {
         registerPanel.SetActive(true);
@@ -324,8 +321,6 @@ public class FirebaseAuthManager : MonoBehaviour
         GameSceneManager.Instance.GotoHomePage();
 
     }
-
-    // ==================== UTILITIES ====================
 
     void ShowStatus(string message)
     {
